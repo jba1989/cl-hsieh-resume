@@ -1,0 +1,216 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><link rel="stylesheet" href="site-navbar.css?v=2">
+<script src="site-navbar.js" defer></script>
+</head><body>
+<title>BOM 查詢磁碟事故復盤</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column; each section = plain-language lead (PM) + collapsible-by-filter technical layer (Tech) */
+:root{
+  --bg:#f7f5ef; --surface:#ffffff; --fg:#273948; --muted:#6b7980; --line:#dce4e7;
+  --accent:#165e83; --accent-soft:#eaf1f4;
+  --warn:#203b55; --warn-soft:#e7edf1;
+  --ok:#165e83; --ok-soft:#eaf1f4;
+  --code-bg:#eef1f2;
+  --font-body:"Noto Sans TC",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.75;
+  padding-block:0 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:820px;margin:0 auto}
+header{padding-block:40px 24px}
+.eyebrow{font-size:13px;letter-spacing:.12em;color:var(--warn);font-weight:700;text-transform:uppercase}
+h1{color:#203b55;font-size:clamp(28px,5vw,40px);line-height:1.25;margin:8px 0 12px;text-wrap:balance;letter-spacing:-.01em}
+.sub{color:var(--muted);max-width:60ch;margin:0}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:16px;font-size:13px;color:var(--muted);font-family:var(--font-mono)}
+.switch{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:10px;border-bottom:1px solid var(--line);
+  display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.switch span{font-size:13px;color:var(--muted);margin-right:4px}
+.switch button{font:inherit;font-size:14px;padding:6px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.switch button[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.switch button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+section{padding-block:36px 4px}
+h2{color:#203b55;font-size:24px;line-height:1.35;margin:0 0 6px;text-wrap:balance}
+h2 small{display:block;font-size:13px;font-weight:500;color:var(--muted);letter-spacing:.08em;margin-bottom:4px}
+h3{color:#203b55;font-size:16px;margin:0 0 6px}
+p{margin:0 0 14px;max-width:68ch}
+.tldr{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:24px}
+.tldr>div{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px;min-width:0}
+.tldr .k{font-size:13px;font-weight:700;color:var(--accent);letter-spacing:.06em}
+.tldr p{margin:6px 0 0;font-size:15px;line-height:1.65}
+.layer{border-left:3px solid var(--line);padding:2px 0 2px 16px;margin:16px 0}
+.layer[data-aud="pm"]{border-color:var(--accent)}
+.layer[data-aud="tech"]{border-color:var(--warn)}
+.tag{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;padding:1px 8px;border-radius:3px;margin-bottom:6px}
+.layer[data-aud="pm"] .tag{background:var(--accent-soft);color:var(--accent)}
+.layer[data-aud="tech"] .tag{background:var(--warn-soft);color:var(--warn)}
+code{font-family:var(--font-mono);font-size:.88em;background:var(--code-bg);padding:1px 6px;border-radius:3px}
+pre{font-family:var(--font-mono);font-size:13px;line-height:1.6;background:var(--code-bg);padding:14px 16px;border-radius:6px;overflow-x:auto;margin:0 0 14px}
+.callout{background:var(--warn-soft);border-radius:6px;padding:14px 16px;margin:16px 0;max-width:68ch}
+.callout.good{background:var(--ok-soft)}
+.callout p{margin:0}
+.flow{display:grid;gap:16px;margin:18px 0}
+.flowrow{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px}
+.flowrow h3{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pill{font-size:12px;padding:1px 8px;border-radius:999px;font-weight:700}
+.pill.bad{background:var(--warn-soft);color:var(--warn)}
+.pill.good{background:var(--ok-soft);color:var(--ok)}
+.steps{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin-top:10px}
+.step{flex:1 1 150px;min-width:0;border:1px solid var(--line);border-radius:4px;padding:10px 12px;font-size:14px;line-height:1.55;background:var(--bg)}
+.step b{display:block;font-size:13px}
+.step.hot{border-color:var(--warn);background:var(--warn-soft)}
+.step.cool{border-color:var(--ok);background:var(--ok-soft)}
+.arrow{align-self:center;color:var(--muted);flex:0 0 auto}
+.bars{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px 16px 8px;margin:18px 0}
+.bar{display:grid;grid-template-columns:minmax(96px,150px) 1fr;gap:12px;align-items:center;margin-bottom:12px;font-size:14px}
+.bar .track{background:var(--code-bg);border-radius:3px;height:28px;position:relative}
+.bar .fill{height:100%;border-radius:3px;display:flex;align-items:center;padding-left:10px;font-family:var(--font-mono);font-size:13px;color:#fff;white-space:nowrap}
+.bar .fill.a{background:var(--muted)} .bar .fill.b{background:var(--warn)} .bar .fill.c{background:var(--ok)}
+.bar .note{padding-left:10px;font-size:13px;color:var(--muted);position:absolute;left:0;top:50%;transform:translateY(-50%)}
+.cap{font-size:13px;color:var(--muted);margin:0 0 8px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+.tw{overflow-x:auto;margin:14px 0;background:var(--surface);border:1px solid var(--line);border-radius:6px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;min-width:120px}
+th{font-size:13px;color:var(--muted);font-weight:700}
+tr:last-child td{border-bottom:0}
+ol.lessons{padding-left:1.2em;margin:0;max-width:68ch}
+ol.lessons li{margin-bottom:12px}
+footer{margin-top:48px;padding-top:16px;border-top:1px solid var(--line);font-size:13px;color:var(--muted)}
+@media (max-width:520px){.arrow{display:none}.bar{grid-template-columns:1fr;gap:4px}}
+</style>
+
+<div class="wrap">
+<header>
+  <h1>查詢只回 4 筆資料，資料庫卻先算了 170 萬筆，把磁碟寫滿</h1>
+  <p class="sub">一次製造系統 BOM 查詢功能在正式環境因 PostgreSQL「Disk full」失敗的處理過程。重點不是磁碟，而是第一個看起來正確的修法其實讓問題更糟。</p>
+</header>
+
+
+
+<div class="tldr">
+  <div><div class="k">發生什麼</div><p>BOM 查詢頁面在正式環境報錯，資料庫回「磁碟空間不足」。</p></div>
+  <div><div class="k">真正原因</div><p>不是磁碟太小，是一支查詢的寫法逼資料庫先組出約 170 萬列暫時資料，最後只留 4 列。</p></div>
+  <div><div class="k">怎麼解</div><p>改成2 階段查詢：先用索引找出少數符合的資料，再補上顯示用欄位。</p></div>
+  <div><div class="k">結果</div><p>查詢從3,000 多毫秒降到個位數毫秒，不再大量佔用暫存磁碟。</p></div>
+</div>
+
+<section>
+  <h2><small>01 · 事件</small>1 則錯誤通知，第一直覺是「磁碟不夠」</h2>
+  <p>正式站的 chatbot 通知顯示，使用者執行 BOM 查詢時，PostgreSQL 回傳 <code>53100 Disk full</code>：資料庫要配置暫存空間時，伺服器已經沒有空間。</p>
+  <div class="layer" data-aud="pm"><span class="tag">補充</span>
+    <p>BOM 是「一個產品由哪些零件組成」的清單，是備料與生產計畫的基礎資料。這個查詢壞掉，相關人員就無法查詢零件組成。這份紀錄沒有留下受影響人數與持續時間，這是需要補上的資料。</p>
+  </div>
+  <div class="layer" data-aud="tech"><span class="tag">技術細節</span>
+    <p>最初的工單把它歸類為基礎設施問題，待辦是確認 PVC 使用率、WAL、temp file、dead tuple，並考慮 VACUUM 或擴充磁碟。這個方向合理，但它假設「磁碟被別的東西吃掉」。實際上是這支查詢自己產生了大量 temp file。</p>
+  </div>
+</section>
+
+<section>
+  <h2><small>02 · 診斷</small>看執行計畫，而不是看磁碟</h2>
+  <p>用 <code>EXPLAIN (ANALYZE, BUFFERS)</code> 在 268 萬列的真實資料規模上看資料庫實際怎麼跑這支查詢。</p>
+  <div class="layer" data-aud="pm"><span class="tag">補充</span>
+    <p>比喻：要找 4 位客人的訂單，系統卻先把全公司 170 萬筆訂單與客人資料全部配對印出來，最後才用名字劃掉不要的。擴大倉庫只是讓它多印一點，下次資料更多還是會爆。</p>
+  </div>
+  <div class="layer" data-aud="tech"><span class="tag">技術細節</span>
+    <p>原查詢用跨表 OR 過濾料號（<code>item_detail.item_code = X OR second_source.second_item_code = X</code>），再接 LEFT JOIN 描述表與 13 欄 GROUP BY。OR 條件跨 2 張表，無法下推成索引條件，planner 只能先把 <code>bom × bom_version_detail</code> 等多表 join 完（約 170 萬列），最後才套用料號過濾。結果是全表掃描加 hash 溢出，約 280MB 到 1GB 的 temp file。</p>
+  </div>
+  <div class="flow">
+    <div class="flowrow">
+      <h3>原查詢 <span class="pill bad">先展開、後過濾</span></h3>
+      <div class="steps">
+        <div class="step"><b>多表 join</b>bom、版本、明細…</div><span class="arrow">→</span>
+        <div class="step hot"><b>約 170 萬列</b>溢出到磁碟 temp file</div><span class="arrow">→</span>
+        <div class="step"><b>13 欄 GROUP BY</b>再聚合一次</div><span class="arrow">→</span>
+        <div class="step"><b>料號過濾</b>最後只剩 4 列</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><small>03 · 第 1 版修法</small>診斷對了，解法卻讓暫存用量變成 4 倍</h2>
+  <p>團隊把 EXPLAIN 結果交給 AI 分析。診斷是對的：跨表 OR 吃不到索引。建議的修法也是業界常見做法：把 OR 拆成 UNION。這個修法在邏輯上輸出完全一致，所以只看結果筆數的話會判定修好了。</p>
+  <p>在同一份 268 萬列資料上重跑 EXPLAIN 之後，結果相反。</p>
+  <div class="bars" role="img" aria-label="暫存檔用量：原查詢約 280MB，拆成 UNION 後約 1.1GB，2 階段查詢未溢出">
+    <p class="cap">單次查詢的暫存檔用量（約略值）</p>
+    <div class="bar"><span>原查詢</span><div class="track"><div class="fill a" style="width:25%">約 280MB</div></div></div>
+    <div class="bar"><span>OR 拆 UNION</span><div class="track"><div class="fill b" style="width:100%">約 1.1GB</div></div></div>
+    <div class="bar"><span>2 階段查詢</span><div class="track"><div class="note">不再溢出到磁碟（未記錄精確數值）</div></div></div>
+  </div>
+  <div class="layer" data-aud="pm"><span class="tag">補充</span>
+    <p>如果當時直接上線，正式站的磁碟會被壓得更緊，而且畫面上看不出差別，因為查詢結果是對的。這是這次事故最重要的一個教訓：「結果正確」不等於「問題解決」。</p>
+  </div>
+  <div class="layer" data-aud="tech"><span class="tag">技術細節</span>
+    <p>UNION 只是把「先 materialize 全表再過濾」的計畫複製成2 份各跑 1 次。每個分支仍帶著 LEFT JOIN 與 13 欄 GROUP BY，planner 依然必須先算出約 170 萬列的中間結果。AI 診斷只抓對一半：它看到 OR，沒看到後面的 GROUP BY 才是逼出 materialize 的原因。</p>
+  </div>
+  <div class="callout"><p><b>驗證原則：</b>把「診斷是否正確」和「解法是否有效」分開驗證。後者必須用真實資料量、真實執行計畫確認，不能憑經驗判斷「這樣改應該會比較快」。</p></div>
+</section>
+
+<section>
+  <h2><small>04 · 最終方案</small>索引驅動的2 階段查詢</h2>
+  <div class="layer" data-aud="pm"><span class="tag">補充</span>
+    <p>先用索引（類似書後的索引頁）直接翻到符合條件的那幾筆，再拿這一小撮去補上名稱、描述等顯示資料。資料庫從頭到尾只處理少量資料，不再有機會把 170 萬筆展開到磁碟。</p>
+  </div>
+  <div class="flow">
+    <div class="flowrow">
+      <h3>新查詢 <span class="pill good">先縮小、後補欄位</span></h3>
+      <div class="steps">
+        <div class="step cool"><b>階段一：Core</b>從過濾表走索引，料號條件在此套用</div><span class="arrow">→</span>
+        <div class="step cool"><b>少量明細列</b>只剩符合的幾列</div><span class="arrow">→</span>
+        <div class="step"><b>階段二：Outer</b>以子查詢接描述表，再做聚合</div><span class="arrow">→</span>
+        <div class="step"><b>回傳結果</b>同樣 4 列</div>
+      </div>
+    </div>
+  </div>
+  <div class="layer" data-aud="tech"><span class="tag">技術細節</span>
+    <p>Core 先從過濾表以索引解出少量明細列，料號層過濾在這一層完成。Outer 用 <code>fromSub</code> 把 Core 當子查詢，再接描述用表做 LEFT JOIN 與聚合。因為進入聚合的資料已經很小，planner 在小資料集上聚合，不再「先聚合、再過濾」。另外補了2 個 btree 索引，讓2 個階段都能命中索引。</p>
+    <pre>-- 概念示意（非實際程式碼）
+SELECT … 描述欄位, 13 欄聚合
+FROM (
+  SELECT 明細列            -- Core：走索引，料號過濾在此
+  FROM 過濾表 WHERE 料號 = :x   -- 命中 btree
+) core
+LEFT JOIN 描述表 …          -- Outer：只對少量列補欄位
+GROUP BY …</pre>
+  </div>
+  <div class="callout good"><p><b>代價：</b>查詢邏輯變複雜，需要維護2 層 query。換來的是查詢時間從3,000 多毫秒降到個位數毫秒，且暫存磁碟不再被壓爆。</p></div>
+</section>
+
+<section>
+  <h2><small>05 · 驗證</small>如何證明重寫後沒有改壞結果</h2>
+  <div class="layer" data-aud="pm"><span class="tag">補充</span>
+    <p>這是核心查詢，改壞了不會當機，只會讓使用者看到錯的零件清單。所以驗證的重點是「新舊結果逐欄完全一致」，不只是筆數相同。</p>
+  </div>
+  <div class="tw"><table>
+    <thead><tr><th>方法</th><th>做了什麼</th><th>防的是什麼</th></tr></thead>
+    <tbody>
+      <tr><td>新舊部署對打</td><td>寫唯讀腳本，同時呼叫改動前（現網）與改動後（分支部署），用同一份 payload 跑 8 個測試案例（5 種 queryOption 加各 filter），逐案例 diff 完整回傳資料並量測耗時</td><td>只比 total 筆數而漏掉欄位差異</td></tr>
+      <tr><td>Golden test</td><td>寫 16 個 feature test，先鎖住改寫前的行為</td><td>重構時行為悄悄改變</td></tr>
+      <tr><td>Mutation testing</td><td>刻意改壞程式，確認這 16 個測試真的會失敗</td><td>測試全綠但其實什麼都沒檢查</td></tr>
+      <tr><td><code>DB::pretend()</code></td><td>測試資料庫放不進 materialized view 欄位（<code>item_inventory_details</code>），改為只驗證 SQL 是否正確組出 <code>whereExists</code></td><td>為了測試而硬造不真實的資料</td></tr>
+    </tbody></table></div>
+</section>
+
+<section>
+  <h2><small>06 · 結果與取捨</small>修好了什麼，留下什麼</h2>
+  <div class="tw"><table>
+    <thead><tr><th>面向</th><th>結果</th></tr></thead>
+    <tbody>
+      <tr><td>可靠度</td><td>BOM 查詢能在 268 萬列的真實資料規模下正常執行，Disk full 錯誤消除</td></tr>
+      <tr><td>效能</td><td>3,000 多毫秒降到個位數毫秒</td></tr>
+      <tr><td>維護成本</td><td>查詢分 2 層，閱讀與修改的門檻比原本高</td></tr>
+      <tr><td>資料庫面</td><td>多了2 個 btree 索引，需要承擔寫入與儲存成本</td></tr>
+      <tr><td>尚未量化</td><td>受影響使用者數、中斷時間、事故前後查詢頻率。這份紀錄沒有這些數字，因此不列推估</td></tr>
+    </tbody></table></div>
+</section>
+
+
+
+</div>
+
+
+
+<link rel="stylesheet" href="report-navigation.css">
+<script src="report-navigation.js?v=2"></script>
+</body></html>

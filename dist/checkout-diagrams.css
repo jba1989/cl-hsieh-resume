@@ -1,0 +1,9 @@
+/* Diagram Design's doc-inline canvas stays readable on a narrow viewport. */
+.diagram iframe {
+  height: 628px;
+  background: var(--paper);
+}
+
+@media (max-width: 780px) {
+  .diagram iframe { height: 628px; }
+}

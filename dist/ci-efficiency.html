@@ -1,0 +1,1469 @@
+<!doctype html><html lang="zh-Hant" data-theme="light"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><link rel="stylesheet" href="site-navbar.css?v=2">
+<script src="site-navbar.js" defer></script>
+</head><body>
+<title>1120 秒到 161 秒</title>
+<style>
+/* layout: full-bleed white / gray bands (apple theme below), cards take the inverse color of their band */
+:root {
+  --good: #248a3d; --bad: #d70015; --bad-soft: #fde8ea;
+  --hi: #d70015; --hi-soft: #fde8ea;
+  --sunken: rgba(127,127,127,.14);
+  --mono: ui-monospace, "SF Mono", Menlo, "Noto Sans Mono CJK TC", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --good: #30d158; --bad: #ff453a; --bad-soft: #3a1d20;
+  --hi: #ff6961; --hi-soft: #3a1d20; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --good: #30d158; --bad: #ff453a; --bad-soft: #3a1d20;
+  --hi: #ff6961; --hi-soft: #3a1d20; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { margin: 0; color: var(--fg); font-family: var(--f-body); }
+a { color: var(--accent); }
+p { margin: 0; }
+h1, h2, h3 { font-family: var(--f-display); margin: 0; text-wrap: balance; }
+code, .m { font-family: var(--mono); font-size: .86em; background: var(--sunken); padding: .1em .4em; border-radius: 6px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+section { display: grid; align-content: start; }
+section > * { min-width: 0; }
+section h2 { display: flex; margin: 0; }
+.sec-note { font-size: 15px; color: var(--muted); }
+.prose p { margin: 0 0 1em; }
+.prose p:last-child { margin-bottom: 0; }
+.prose strong, .why b, .finding p b, .lesson p b, .qa-a b, .callout b, .rej p b, .brief p b { color: var(--fg); font-weight: 600; }
+
+/* nav */
+.toc { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.toc::-webkit-scrollbar { display: none; }
+.toc a { white-space: nowrap; padding: 5px 12px; border-radius: 980px; color: var(--muted); text-decoration: none; }
+
+/* hero */
+.masthead { display: grid; justify-items: center; }
+.thesis { font-size: clamp(19px, 2.4vw, 24px); line-height: 1.5; color: var(--muted); max-width: 34em; }
+.thesis strong { color: var(--fg); font-weight: 600; }
+.figures { display: flex; flex-wrap: wrap; justify-content: center; gap: 24px clamp(28px, 5vw, 56px); padding: 8px 0; }
+.fig { display: flex; flex-direction: column; align-items: center; }
+.fig-n { font-size: clamp(30px, 4.2vw, 44px); font-weight: 600; letter-spacing: -.02em; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.fig-n.pos { color: var(--accent); }
+.fig-l { font-size: 13px; color: var(--muted); }
+.provenance { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.brief { display: grid; gap: 14px; width: 100%; text-align: left; margin-top: 8px; }
+@media (min-width: 52rem) { .brief { grid-template-columns: repeat(3, 1fr); } }
+.brief > div { background: var(--surface); border-radius: 18px; padding: 22px 24px; min-width: 0; }
+.brief h3 { font-size: 13px; font-weight: 600; color: var(--accent); margin: 0 0 6px; }
+.brief p { font-size: 15.5px; color: var(--muted); }
+
+/* tables live in a card */
+.scroller { background: var(--surface); border-radius: 18px; padding: 6px 22px; overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 15px; }
+th { font-size: 13px; text-align: left; white-space: nowrap; padding: 12px 16px 10px 0; }
+th.r { text-align: right; }
+td { padding: 12px 16px 12px 0; vertical-align: baseline; }
+tr:last-child td { border-bottom: 0; }
+td.num { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; font-size: 14px; }
+td.testname, td.pid { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+td.testname b { color: var(--fg); font-weight: 500; }
+td.what { color: var(--muted); }
+td.what b { color: var(--fg); font-weight: 600; }
+td.note { font-size: 14px; color: var(--muted); min-width: 16rem; }
+td.note b { color: var(--fg); font-weight: 600; }
+.ci { color: var(--bad); }
+.loc { color: var(--good); }
+tr.w4 td { background: var(--bad-soft); }
+tr.w4 td:first-child { box-shadow: inset 3px 0 0 var(--bad); padding-left: 12px; }
+.wpill { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+.wpill b { font-weight: 600; color: var(--fg); }
+
+/* environment card */
+.arch { display: grid; gap: 14px; }
+.arch-runner { background: var(--surface); border-radius: 18px; padding: 20px 22px 22px; }
+.arch-label { font-size: 13px; color: var(--muted); margin: 0 0 14px; }
+.arch-jobs { display: grid; gap: 14px; }
+@media (min-width: 52rem) { .arch-jobs { grid-template-columns: 1fr 1fr; } }
+.arch-job { background: var(--bg); border-radius: 14px; padding: 16px 18px 18px; min-width: 0; }
+.arch-job h3 { font-size: 16px; margin: 0 0 10px; }
+.arch-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.chip { font-family: var(--mono); font-size: 12.5px; padding: 3px 12px; border-radius: 980px; background: var(--accent-soft); color: var(--accent); }
+.chip.db { background: rgba(48,209,88,.16); color: var(--good); }
+.arch-pg { border: 1px dashed var(--line); border-radius: 12px; padding: 12px 14px 14px; }
+.arch-pg p { font-size: 14px; color: var(--muted); margin: 0 0 8px; }
+.arch-pg p b { color: var(--fg); }
+
+/* decision chain */
+.steps { display: flex; flex-direction: column; background: var(--surface); border-radius: 18px; padding: 6px 26px; }
+.step { display: grid; grid-template-columns: 5.6rem minmax(0, 1fr); gap: 0 20px; padding: 22px 0; border-top: 1px solid var(--line); }
+.step:first-child { border-top: 0; }
+.rail { font-size: 13px; line-height: 1.5; color: var(--muted); display: flex; flex-direction: column; gap: 2px; padding-top: 2px; }
+.rail .ord { color: var(--accent); font-weight: 600; }
+.rail .pid { font-family: var(--mono); font-size: 12px; }
+.rail .wk { font-size: 12px; white-space: nowrap; }
+.step-body { min-width: 0; }
+.step-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin-bottom: 8px; }
+.step-title { font-weight: 600; font-size: 17px; letter-spacing: -.01em; }
+.step-title code { background: none; padding: 0; }
+.tag { font-size: 12px; padding: 2px 10px; border-radius: 980px; white-space: nowrap; }
+.tag.integrity { background: var(--accent-soft); color: var(--accent); }
+.tag.noise { background: var(--sunken); color: var(--muted); }
+.why { color: var(--muted); font-size: 15.5px; max-width: 44em; margin: 0 0 12px; }
+.bar-row { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.track { position: relative; flex: 1 1 auto; min-width: 0; height: 8px; background: var(--sunken); border-radius: 980px; overflow: hidden; }
+.fill { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 980px; }
+.fill.best { background: var(--good); }
+.bar-val { color: var(--fg); min-width: 5.2rem; text-align: right; }
+.bar-sub { color: var(--muted); min-width: 9.4rem; }
+.no-bar { border-left: 2px solid var(--accent); padding-left: 12px; font-size: 14px; color: var(--muted); margin: 0; }
+
+/* cards */
+.ledger, .findings, .lessons { display: grid; gap: 14px; }
+@media (min-width: 62rem) { .ledger { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 52rem) { .findings, .lessons { grid-template-columns: 1fr 1fr; } }
+.rej, .finding, .lesson { background: var(--surface); border-radius: 18px; padding: 22px 24px; min-width: 0; }
+.rej h3, .finding h3, .lesson h3 { font-size: 17px; margin: 0 0 4px; }
+.rej h3 code { background: none; padding: 0; }
+.vd { font-size: 12.5px; font-weight: 600; color: var(--bad); margin: 0 0 8px; }
+.rej p, .finding p, .lesson p { font-size: 15px; color: var(--muted); max-width: none; }
+.rej p + p { margin-top: 10px; }
+
+.callout { background: var(--surface); border-radius: 18px; padding: 20px 24px; max-width: none; font-size: 15.5px; color: var(--muted); }
+.callout.warn { background: var(--bad-soft); }
+
+/* Q&A */
+.qa { background: var(--surface); border-radius: 18px; padding: 6px 28px; display: flex; flex-direction: column; }
+.qa-item { padding: 20px 0 22px; border-top: 1px solid var(--line); }
+.qa-item:first-child { border-top: 0; }
+.qa-q { font-weight: 600; font-size: 17px; margin: 0 0 6px; }
+.qa-a { font-size: 15.5px; color: var(--muted); max-width: 46em; }
+.qa-a + .qa-a { margin-top: 8px; }
+.src { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 8px; }
+
+/* diagrams */
+figcaption { font-size: 14px; color: var(--muted); max-width: 44em; }
+.keys span { font-size: 13px; }
+
+footer { display: flex; flex-wrap: wrap; gap: 6px 22px; justify-content: center; font-size: 13px; color: var(--muted); }
+
+/* system-flowchart-artifact: paste into the page <style>. Tokens first, then Mermaid overrides. */
+:root {
+  --node: #ffffff; --label-bg: #ffffff; --label-fg: #515154; --seq-dot: #2b3a4a;
+  --ext: #6b7686;  --ext-bg: #eef0f3;
+  --app: #2b5d8a;  --app-bg: #e4edf6;
+  --db: #3d7a52;   --db-bg: #e2f0e6;
+  --store: #a26a10;   --store-bg: #f7eedb;
+  --next: #5b50c8; --next-bg: #ebe9fa;
+  /* also needs: --surface --fg --muted --line --hi (page tokens) */
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --node: #232a33; --label-bg: #3a3a3c; --label-fg: #f5f5f7; --seq-dot: #0071e3;
+  --ext: #9aa5b3;  --ext-bg: #232932;
+  --app: #7fb0dc;  --app-bg: #1f3245;
+  --db: #7fc496;   --db-bg: #1c3124;
+  --store: #e3b45c;   --store-bg: #382c16;
+  --next: #a9a1f5; --next-bg: #2a2748; } }
+:root[data-theme="dark"] {
+  --node: #232a33; --label-bg: #3a3a3c; --label-fg: #f5f5f7; --seq-dot: #0071e3;
+  --ext: #9aa5b3;  --ext-bg: #232932;
+  --app: #7fb0dc;  --app-bg: #1f3245;
+  --db: #7fc496;   --db-bg: #1c3124;
+  --store: #e3b45c;   --store-bg: #382c16;
+  --next: #a9a1f5; --next-bg: #2a2748; }
+
+/* ---- flowcharts: styling for Mermaid output. Mermaid only supplies layout; every color comes from the tokens above ---- */
+figure { margin: 0; display: grid; gap: 10px; }
+.diagram { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 18px; overflow-x: auto; }
+.diagram pre.mermaid { margin: 0; background: transparent; text-align: center; }
+.mermaid-diagram svg { margin: 0 auto; }
+/* system frame (subgraph) */
+.mermaid-diagram .cluster.ext  { --sc: var(--ext);  --sb: var(--ext-bg); }
+.mermaid-diagram .cluster.app  { --sc: var(--app);  --sb: var(--app-bg); }
+.mermaid-diagram .cluster.db   { --sc: var(--db);   --sb: var(--db-bg); }
+.mermaid-diagram .cluster.store   { --sc: var(--store);   --sb: var(--store-bg); }
+.mermaid-diagram .cluster.next { --sc: var(--next); --sb: var(--next-bg); }
+.mermaid-diagram .cluster rect { fill: var(--sb, transparent) !important; stroke: var(--sc, var(--line)) !important; stroke-width: 1.6px !important; stroke-dasharray: 7 5; rx: 10; ry: 10; }
+.mermaid-diagram .cluster .nodeLabel, .mermaid-diagram .cluster-label .nodeLabel { color: var(--sc, var(--fg)) !important; font-weight: 700; }
+/* component: border color follows the system it belongs to, shape follows its type */
+.mermaid-diagram .node.ext  { --sc: var(--ext); }
+.mermaid-diagram .node.app  { --sc: var(--app); }
+.mermaid-diagram .node.db   { --sc: var(--db); }
+.mermaid-diagram .node.store   { --sc: var(--store); }
+.mermaid-diagram .node.next { --sc: var(--next); }
+.mermaid-diagram .node.hot  { --sc: var(--hi); }
+.mermaid-diagram .node :is(rect, polygon, path, circle, ellipse) { fill: var(--node) !important; stroke: var(--sc, var(--ext)) !important; stroke-width: 1.8px !important; }
+.mermaid-diagram .node.hot :is(rect, polygon, path) { stroke-width: 3px !important; }
+.mermaid-diagram .node.gap :is(rect, polygon, path) { stroke: var(--hi) !important; stroke-dasharray: 6 4; fill: transparent !important; }
+.mermaid-diagram .node.gap .nodeLabel { color: var(--hi) !important; }
+.mermaid-diagram .node .nodeLabel { color: var(--fg) !important; line-height: 1.45; font-size: 13.5px; }
+.mermaid-diagram foreignObject { overflow: visible; }
+.mermaid-diagram .cluster-label .nodeLabel { font-size: 14px; }
+/* edge label: the pill is the inner <p>, centered in the measured box, so padding is symmetric even when the web font is narrower than the measuring font */
+.mermaid-diagram .edgeLabel, .mermaid-diagram .edgeLabel * { background: none !important; color: var(--label-fg) !important; font-size: 13px; text-align: center; }
+.mermaid-diagram .edgeLabel rect { fill: none !important; }
+.mermaid-diagram .edgeLabel p, .mermaid-diagram .edgeLabel span.edgeLabel:not(:has(p)) { display: inline-block; margin: 0; padding: 2px .5em; white-space: nowrap; border-radius: 6px; background-color: var(--label-bg) !important; }
+/* sequence diagram event numbers: dark disc, white digits in both themes */
+.mermaid-diagram marker[id*="sequencenumber"] circle, .mermaid-diagram circle.sequenceNumber { fill: var(--seq-dot) !important; stroke: none !important; }
+.mermaid-diagram .sequenceNumber { fill: #ffffff !important; stroke: none !important; }
+.keys { display: flex; flex-wrap: wrap; gap: 8px 10px; font-size: 13px; }
+.keys span { padding: 1px 12px; border: 1.5px dashed var(--sc); background: var(--sb); border-radius: 6px; }
+.keys .k-ext  { --sc: var(--ext);  --sb: var(--ext-bg); }
+.keys .k-app  { --sc: var(--app);  --sb: var(--app-bg); }
+.keys .k-db   { --sc: var(--db);   --sb: var(--db-bg); }
+.keys .k-store   { --sc: var(--store);   --sb: var(--store-bg); }
+.keys .k-next { --sc: var(--next); --sb: var(--next-bg); }
+.keys .k-hot  { --sc: var(--hi);   --sb: var(--hi-soft); border-style: solid; }
+
+/* ---- Apple-style theme: full-bleed white / light-gray bands, big type, soft 18px panels ---- */
+:root {
+  --bg: #ffffff; --surface: #f5f5f7; --fg: #1d1d1f; --muted: #6e6e73; --line: #d2d2d7;
+  --accent: #0066cc; --accent-soft: #e8f1fb;
+  --band-a: #f5f5f7; --band-b: #ffffff; --nav-bg: rgba(255,255,255,.72);
+  --f-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang TC", "Noto Sans TC", system-ui, sans-serif;
+  --f-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang TC", "Noto Sans TC", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #000000; --surface: #1d1d1f; --fg: #f5f5f7; --muted: #a1a1a6; --line: #424245;
+  --accent: #2997ff; --accent-soft: #0e2a43;
+  --band-a: #1d1d1f; --band-b: #000000; --nav-bg: rgba(29,29,31,.72); } }
+:root[data-theme="dark"] {
+  --bg: #000000; --surface: #1d1d1f; --fg: #f5f5f7; --muted: #a1a1a6; --line: #424245;
+  --accent: #2997ff; --accent-soft: #0e2a43;
+  --band-a: #1d1d1f; --band-b: #000000; --nav-bg: rgba(29,29,31,.72); }
+
+body { background: var(--band-b); font-size: 17px; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+.wrap { max-width: none; padding: 0; display: block; }
+.wrap > header, .wrap > section, .wrap > footer { padding-inline: max(20px, calc((100% - 980px) / 2)); }
+
+header { background: var(--band-b); padding-block: 112px 80px; text-align: center; justify-items: center; gap: 22px; }
+.eyebrow { font-family: var(--f-body); font-size: 17px; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--muted); }
+h1 { font-size: clamp(40px, 7vw, 72px); font-weight: 600; letter-spacing: -.025em; line-height: 1.08; }
+.lede { font-size: clamp(19px, 2.4vw, 24px); line-height: 1.5; color: var(--muted); max-width: 32em; }
+.verdict { background: var(--surface); border: 0; border-radius: 18px; padding: 24px 28px; text-align: left; max-width: 44em; }
+.meta { justify-content: center; }
+
+section { border: 0; border-radius: 0; padding-block: 88px; gap: 28px; }
+section:nth-of-type(odd)  { background: var(--band-a); --surface: var(--band-b); --bg: var(--band-a); }
+section:nth-of-type(even) { background: var(--band-b); --surface: var(--band-a); --bg: var(--band-b); }
+section h2 { flex-direction: column; align-items: flex-start; gap: 8px; font-size: clamp(30px, 4.6vw, 48px); font-weight: 600; letter-spacing: -.02em; line-height: 1.12; }
+section h2 .n { font-family: var(--f-body); font-size: 17px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+h3 { font-size: 21px; font-weight: 600; letter-spacing: -.01em; }
+p { max-width: 44em; }
+.lede, .verdict { max-width: 44em; }
+
+.diagram, .tbl, .card, .warn, .rejected { border: 0; border-radius: 18px; }
+.tbl { overflow-x: auto; }
+th { background: transparent; color: var(--muted); font-weight: 600; letter-spacing: 0; }
+th, td { border-bottom: 1px solid var(--line); }
+.warn { border: 0; }
+
+.plan-tabs { gap: 10px; }
+.plan-tab { border: 0; border-radius: 980px; background: rgba(127,127,127,.14); padding: 8px 18px; }
+.plan-tab small { color: inherit; opacity: .7; }
+.plan-tab:hover { background: rgba(127,127,127,.22); }
+.plan-tab[aria-selected="true"] { background: var(--accent); color: #fff; box-shadow: none; }
+
+.toc { background: var(--nav-bg); -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px); border-bottom: 1px solid rgba(127,127,127,.22); height: 48px; align-items: center; padding-block: 0; padding-inline: max(16px, calc((100% - 980px) / 2)); }
+.toc a { font-size: 13px; }
+.toc a[aria-current="true"] { color: var(--fg); background: rgba(127,127,127,.16); }
+section[id] { scroll-margin-top: 48px; }
+
+footer { background: var(--band-b); border-top: 1px solid var(--line); padding-block: 28px; text-align: center; }
+@media (max-width: 560px) {
+  body { font-size: 16px; }
+  header { padding-block: 72px 48px; }
+  section { padding-block: 56px; }
+}
+
+
+:root {
+  --bg: #f7f5ef; --surface: #ffffff; --fg: #273948; --muted: #6b7980; --line: #dce4e7;
+  --accent: #165e83; --accent-soft: #eaf1f4;
+  --band-a: #eef2f3; --band-b: #f7f5ef; --nav-bg: rgba(247,245,239,.94);
+  --good: #165e83; --bad: #203b55; --bad-soft: #e7edf1; --hi: #203b55; --hi-soft: #e7edf1;
+  --node: #ffffff; --label-bg: #ffffff; --label-fg: #6b7980; --seq-dot: #203b55;
+  --ext: #6b7980; --ext-bg: #eef2f3; --app: #165e83; --app-bg: #eaf1f4;
+  --db: #203b55; --db-bg: #e7edf1; --store: #526b7b; --store-bg: #eef2f3;
+  --next: #165e83; --next-bg: #eaf1f4;
+}
+h1, h2, h3 { color: #203b55; }
+.chip.db { background: var(--accent-soft); }
+</style>
+
+<nav class="toc" aria-label="章節">
+  <a href="#s-symptom">症狀</a><a href="#s-env">環境</a><a href="#s-relation">名詞</a><a href="#s-isolation">隔離機制</a><a href="#s-chain">決策鏈</a><a href="#s-workers">Worker 對照</a><a href="#s-rejected">否決</a><a href="#s-scale">加機器</a><a href="#s-qa">問答</a>
+</nav>
+<div class="wrap">
+
+  <header class="masthead">
+
+    <h1>1120 秒到 161 秒</h1>
+    <p class="thesis">
+      CI 的 phpunit 一輪從 <strong>1120.8 秒</strong>降到 <strong>161.5 秒</strong>。
+      時間不是被少數幾個慢測試吃掉，而是被每個測試都要付一次的固定成本吃掉。
+      這份紀錄的重點不在改了什麼，而在<strong>每一步為什麼是下一步</strong>，以及6 項看似合理卻被實測推翻的方向。
+    </p>
+
+    <div class="figures">
+      <div class="fig">
+        <span class="fig-n">1120.8s</span>
+        <span class="fig-l">原始一輪</span>
+      </div>
+      <div class="fig">
+        <span class="fig-n pos">161.5s</span>
+        <span class="fig-l">最佳一輪</span>
+      </div>
+      <div class="fig">
+        <span class="fig-n pos">−86%</span>
+        <span class="fig-l">縮減幅度</span>
+      </div>
+      <div class="fig">
+        <span class="fig-n">44.0 / 42.5</span>
+        <span class="fig-l">覆蓋率 unit / feature</span>
+      </div>
+      <div class="fig">
+        <span class="fig-n">9 / 6</span>
+        <span class="fig-l">採用 / 否決</span>
+      </div>
+    </div>
+
+    <div class="brief">
+      <div>
+        <h3>問題</h3>
+        <p><b>每個測試都重複付同一筆成本</b>：fork 行程、重建 application、provider boot。不是少數慢測試，所以「換更快的機器」解不掉。</p>
+      </div>
+      <div>
+        <h3>做法</h3>
+        <p>9 項採用，<b>最大一步是 morph map 進版控（單步 −44%）</b>，它原本不在計畫裡。其餘是關掉 <code>processIsolation</code>、DB 關耐久性、修掉 seeder 的無效 truncate。</p>
+      </div>
+      <div>
+        <h3>驗證</h3>
+        <p><b>覆蓋率不變</b>（unit 全程 44.0）。6 項方向實測後否決，包含「加 worker」：多花 84% CPU，一輪只快 8.8%，且落在單輪雜訊內。</p>
+      </div>
+    </div>
+
+
+  </header>
+
+  <section id="s-symptom">
+    <h2><span class="n">背景</span>症狀：平坦的分布</h2>
+    <p class="sec-note">為什麼一開始就判斷「不是那幾個慢測試」</p>
+    <div class="prose">
+      <p>
+        逐測試耗時分布異常平坦：unit 的 <span class="m">p10 2.51s</span> /
+        <span class="m">p50 5.10s</span> / <span class="m">p90 6.39s</span>，
+        而 1703 個測試裡連最快的純邏輯測試也要 <span class="m">0.478s</span>。
+        這種形狀只可能來自每個測試都付的地板，不會來自幾個慢查詢：如果是少數離群值，
+        p50 和 p90 之間會被拉開，而不是整條擠在一起。
+      </p>
+      <p>
+        地板來自測試設定裡從 2020 首版
+        就設著的 <code>processIsolation="true"</code>。每個 test method fork 一個 PHP 行程，
+        重跑 autoloader、重建 application、重新初始化 coverage driver。
+        PHP 8.4 分支把同一份固定成本整體推高 45%（p50 5.10 → 7.41），
+        分布均勻位移，屬環境層面而非個別 regression。
+      </p>
+      <p>
+        <strong>順帶推翻一個前提：「哪個測試檔案最慢」的排名是假象。</strong>
+        <code>--recreate-databases</code> 讓每個 worker 各自建 DB、載入 schema dump
+        再跑 migration，成本全記在該 worker 的第一個測試上。ParaTest 分派是決定性的，
+        所以每輪 pipeline 上榜名單完全相同，看起來像穩定的效能問題。裁決方法是本機單獨跑：
+      </p>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr>
+            <th>被誤判為最慢的測試</th>
+            <th style="text-align:right">CI 記錄</th>
+            <th style="text-align:right">本機單獨跑</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="testname">下載不存在檔案的測試</td>
+            <td class="num ci">23.8s</td>
+            <td class="num loc">0.353s</td>
+          </tr>
+          <tr>
+            <td class="testname">缺少登入資訊的驗證測試</td>
+            <td class="num ci">22.5s</td>
+            <td class="num loc">0.432s</td>
+          </tr>
+          <tr>
+            <td class="testname">採購訂單工作派送測試</td>
+            <td class="num ci">37.8s</td>
+            <td class="num loc">0.368s</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="prose" style="margin-top:1.6rem">
+      <p>
+        <strong>為什麼當時不能慢慢來：現況已在臨界點。</strong>
+        同一份程式碼在 09-04 綠燈、09-07 卻整組被 OOM killer 打死。
+        尾端拋的是 <span class="m">signal "9"</span>，不是斷言失敗；
+        成堆散佈在互不相干測試類的 <span class="m">child process ended unexpectedly</span> 是同一個根因的另一種表象。
+        重跑無效，錯誤數隨負載浮動，這是資源競爭的指紋。
+      </p>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr>
+            <th>日期</th>
+            <th>設定</th>
+            <th style="text-align:right">unit</th>
+            <th style="text-align:right">feature</th>
+            <th>結果</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="testname">09-04</td>
+            <td class="what">現行</td>
+            <td class="num">1118s</td>
+            <td class="num">1121s</td>
+            <td class="what">綠</td>
+          </tr>
+          <tr>
+            <td class="testname">09-07</td>
+            <td class="what">現行（同 sha）</td>
+            <td class="num ci">1922s</td>
+            <td class="num ci">1802s</td>
+            <td class="what"><b class="ci">紅（OOM）</b></td>
+          </tr>
+          <tr>
+            <td class="testname">09-07</td>
+            <td class="what">改過 測試與 CI 設定</td>
+            <td class="num loc">467s</td>
+            <td class="num loc">299s</td>
+            <td class="what">綠</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="s-env">
+    <h2><span class="n">背景</span>測試環境怎麼跑</h2>
+    <p class="sec-note">先看清楚「誰跟誰共用什麼」，後面討論加 worker 才有依據。</p>
+
+    <div class="arch">
+      <div class="arch-runner">
+        <p class="arch-label">一台 runner · tag docker-builder · 16 核 · unit 與 feature 2 個 job 併行在這裡</p>
+        <div class="arch-jobs">
+
+          <div class="arch-job">
+            <h3>phpunit unit test</h3>
+            <div class="arch-row">
+              <span class="chip">worker 1</span>
+              <span class="chip">worker 2</span>
+            </div>
+            <div class="arch-pg">
+              <p><b>1 個 postgres:16 行程</b>（job 的 service container，2 個 worker 共用）</p>
+              <div class="arch-row" style="margin-bottom:0">
+                <span class="chip db">app_test</span>
+                <span class="chip db">…_test_1</span>
+                <span class="chip db">…_test_2</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="arch-job">
+            <h3>phpunit feature test</h3>
+            <div class="arch-row">
+              <span class="chip">worker 1</span>
+              <span class="chip">worker 2</span>
+            </div>
+            <div class="arch-pg">
+              <p><b>另 1 個 postgres:16 行程</b>（與 unit 的互不相干）</p>
+              <div class="arch-row" style="margin-bottom:0">
+                <span class="chip db">app_test</span>
+                <span class="chip db">…_test_1</span>
+                <span class="chip db">…_test_2</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>項目</th><th>現況</th><th>備註</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="what"><b>Postgres 行程數</b></td>
+            <td class="what">每個 job 1 個，不是每個 worker 1 個</td>
+            <td class="what">worker 之間隔離靠「不同 database」，不靠不同 postgres</td>
+          </tr>
+          <tr>
+            <td class="what"><b>worker 數</b></td>
+            <td class="what"><code>--processes=2</code>（每支 job）</td>
+            <td class="what">原本 16（每核 1 個）；2 個 job 同機一起要 32 個。曾兩度試 4，都改回 2，沒有試過 8。逐輪紀錄見「Worker 數對照」</td>
+          </tr>
+          <tr>
+            <td class="what"><b>建 DB</b></td>
+            <td class="what"><code>--recreate-databases</code> 建、<code>--drop-databases</code> 收</td>
+            <td class="what">每個 worker DB 都要載入 schema 並執行 migrations；16 workers 時量到 job 開頭 23–40s</td>
+          </tr>
+          <tr>
+            <td class="what"><b>耐久性</b></td>
+            <td class="what"><code>fsync=off</code> · <code>synchronous_commit=off</code> · <code>full_page_writes=off</code></td>
+            <td class="what">DB 隨 job 建立、隨 job 丟棄，沒有東西可以「crash 後遺失」。只限這種用途</td>
+          </tr>
+          <tr>
+            <td class="what"><b>coverage driver</b></td>
+            <td class="what">每個 job 現場 <code>pecl install pcov</code></td>
+            <td class="what">整段約 9s、佔舊一輪的 1%，不值得為它維護共用 image</td>
+          </tr>
+          <tr>
+            <td class="what"><b>已知陷阱</b></td>
+            <td class="what">Laravel <code>--parallel</code> 只替 default 連線換 DB 名</td>
+            <td class="what">log、vcs 等次要連線不會被換，worker 之間會互相踩</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="s-relation">
+    <h2><span class="n">名詞</span>worker、process、CPU 的關係</h2>
+    <p class="sec-note">先把名詞分清楚，後面「加 worker 為什麼沒用」才讀得懂</p>
+
+    <div class="prose">
+      <p>
+        <strong>CPU 是硬體，process 是跑在上面的工作，worker 是「負責跑測試的 process」的名字。</strong>
+        排程方向是 <span class="m">worker（process）→ 作業系統分配到 → CPU 核</span>，三者不是一對一。
+      </p>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>名詞</th><th>是什麼</th><th>在這個 CI</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="what"><b>CPU（核）</b></td>
+            <td class="what">同一時間只能執行一個 process 的硬體</td>
+            <td class="what">runner 有 16 核，2 支 job 共用</td>
+          </tr>
+          <tr>
+            <td class="what"><b>process</b></td>
+            <td class="what">作業系統排程的單位。PHP 是單執行緒，一個 process 最多用滿 1 核</td>
+            <td class="what">PHP worker、postgres 的每個連線 backend 都是 process</td>
+          </tr>
+          <tr>
+            <td class="what"><b>worker</b></td>
+            <td class="what">ParaTest 開的長駐 PHP process，逐一接測試來跑</td>
+            <td class="what"><code>--processes=2</code> = 每支 job 2 個。「8 個 CPU」其實是 8 個 process（每支 4 個），不是 8 核</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>process 數與核數</th><th>結果</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="what"><b>process ≤ 核數</b></td>
+            <td class="what">理論上各占一核，可平行</td>
+          </tr>
+          <tr>
+            <td class="what"><b>process &gt; 核數</b></td>
+            <td class="what">輪流用同一核、互相等待。原始設定 16 workers × 2 job = 32 &gt; 16 核就是這種</td>
+          </tr>
+          <tr>
+            <td class="what"><b>process ≤ 核數，但共用資源</b></td>
+            <td class="what">仍會互搶同一個 postgres、記憶體、磁碟。4 workers 只有 8 個 process，遠小於 16 核，卻出現 CPU +84%、p50 翻倍，就是這一種（原因是推論，未單獨量過）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="prose" style="margin-top:1.4rem">
+      <p>
+        <strong>3 個容易混的詞。</strong>
+        <span class="m">wall time</span> 是你等 pipeline 的秒數（一輪 161.5s）；
+        <span class="m">CPU 時間</span> 是所有 process 用掉的 CPU 秒數加總，可以遠大於 wall time；
+        <span class="m">平行效率</span> = CPU 時間 ÷（worker 數 × wall time），接近 100% 代表 worker 沒閒著，
+        <b>不代表</b>每個測試沒變慢。「CPU +84% 卻只快 8.8%」不矛盾：多出來的 CPU 拿去互相等待，沒有轉成進度。
+      </p>
+    </div>
+
+    <h3>我們能決定什麼</h3>
+    <p class="sec-note">能直接設定的只有 process 的「總數」，每顆 CPU 跑幾個 process 是作業系統決定的</p>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>想控制的事</th><th>能不能</th><th>怎麼做</th><th>本專案現況</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="what"><b>開幾個 worker</b></td>
+            <td class="what loc">能</td>
+            <td class="what"><code>artisan test --parallel --processes=N</code></td>
+            <td class="what">每支 job 2</td>
+          </tr>
+          <tr>
+            <td class="what"><b>一個 worker 同時有幾個 process</b></td>
+            <td class="what">部分</td>
+            <td class="what">worker 本身 1 個，逐一跑測試。開 <code>processIsolation</code> 或 <code>#[RunTestsInSeparateProcesses]</code> 時，每個測試多 fork 1 個子 process，同一時刻最多 1 個</td>
+            <td class="what">目前沒有任何測試 fork（第 03、09 步）</td>
+          </tr>
+          <tr>
+            <td class="what"><b>一顆 CPU 跑幾個 process</b></td>
+            <td class="what ci">不能直接指定</td>
+            <td class="what">由作業系統排程。只能間接影響：控制 process 總數、限制容器可用核數（docker <code>--cpus</code>／<code>cpuset</code>、k8s CPU limit）、綁核（<code>taskset</code>）</td>
+            <td class="what">runner 有沒有設核數限制：<b>未查</b></td>
+          </tr>
+          <tr>
+            <td class="what"><b>一個 process 用幾核</b></td>
+            <td class="what ci">不能</td>
+            <td class="what">PHP 單執行緒。想用更多核只能開更多 process</td>
+            <td class="what">—</td>
+          </tr>
+          <tr>
+            <td class="what"><b>2 支 job 同機並行</b></td>
+            <td class="what">能（在 runner 端）</td>
+            <td class="what">GitLab Runner 的 <code>concurrent</code> / <code>limit</code> 設定</td>
+            <td class="what">2 支 job 目前同機並行；設定值<b>未查</b></td>
+          </tr>
+          <tr>
+            <td class="what"><b>記憶體上限</b></td>
+            <td class="what">能（容器層）</td>
+            <td class="what">容器 memory limit。超過時 kernel 的 OOM killer 送 <span class="m">signal 9</span></td>
+            <td class="what">09-07 的 OOM 就是這個機制（isolation 開 + 16 workers）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="callout">
+      <b>決定 N 的做法不是算，是量。</b>
+      經驗法則上限是「核數 ÷ 同機 job 數」（16 ÷ 2 = 8），但這個專案在 4 就已經沒有收益。
+      做法：同一份固定樣本分別跑 N = 1、2、4，同時看 wall time、CPU 時間與每測試 p50。
+      <b>p50 開始上升就代表共用資源飽和，不要再加。</b>單輪 pipeline 有約 11% 雜訊，不能當證據。
+    </p>
+  </section>
+
+    <section id="s-isolation">
+    <h2><span class="n">機制</span>processIsolation 底層做了什麼</h2>
+
+    <div class="prose">
+      <p>
+        <strong>一句話：</strong><code>processIsolation="true"</code> 讓 PHPUnit 對<b>每一個測試</b>重新啟動一個空的 PHP 直譯器、
+        從頭載入再跑，結果用暫存檔傳回父 process。
+      </p>
+    </div>
+
+    <div class="keys">
+      <span class="k-app">父 process（ParaTest worker）</span>
+      <span class="k-next">子 process（全新 PHP）</span>
+      <span class="k-hot">隔離才有的成本</span>
+      <span class="k-db">隔離與否都要付</span>
+    </div>
+
+    <figure>
+      <div class="diagram">
+<pre class="mermaid">
+flowchart TB
+  subgraph PARENT["父 process（ParaTest worker）"]
+    direction TB
+    P1["TestCase 檢查 processIsolation 設定"]
+    P2["用測試範本組出一段 PHP 程式碼"]
+    P3["proc_open 新開 php"]
+    P4["阻塞等待 stdout / stderr"]
+    P5["unserialize 結果、轉發事件、合併覆蓋率"]
+    P1 -- "設定為開" --> P2 --> P3 --> P4 --> P5
+  end
+  subgraph CHILD["子 process（全新 PHP 直譯器）"]
+    direction TB
+    C1["啟動直譯器、載入擴充"]
+    C2["require composer autoload"]
+    C3["載入設定、跑 bootstrap"]
+    C4["require 測試檔"]
+    C5["初始化 coverage driver"]
+    C6["new TestClass 然後 run&lt;br/&gt;setUp、測試、tearDown"]
+    C7["序列化結果寫入結果檔"]
+    C1 --> C2 --> C3 --> C4 --> C5 --> C6 --> C7
+  end
+  P3 -- "stdin 傳入程式碼" --> C1
+  C7 -- "結果暫存檔" --> P5
+  class P1,P2,P3,P4,P5 app
+  class PARENT app
+  class C1,C2,C3,C4,C5,C6,C7 next
+  class CHILD next
+  class C1,C2,C3,C5 hot
+</pre>
+      </div>
+      <figcaption>圖 1　一個測試在隔離模式下的完整路徑。紅框是子 process 每個測試都要重做的步驟。</figcaption>
+    </figure>
+
+    <figure>
+      <div class="diagram">
+<pre class="mermaid">
+flowchart TB
+  T(["一個測試開始"]) --> D{"processIsolation 開著？"}
+  subgraph ISO["隔離才有的成本（每個測試一次）"]
+    direction TB
+    I1["啟動新的 PHP 直譯器"]
+    I2["重跑 autoload、載入設定、bootstrap"]
+    I3["重新初始化 coverage driver"]
+    I1 --> I2 --> I3
+  end
+  subgraph ALWAYS["隔離與否都要付"]
+    direction TB
+    S1["setUp：createApplication"]
+    S2["register 與 boot 52 個 provider&lt;br/&gt;含 morph map 初始化約 100ms"]
+    S3["執行測試、tearDown"]
+    S1 --> S2 --> S3
+  end
+  D -- "開" --> I1
+  I3 -- "進入測試" --> S1
+  D -- "關" --> S1
+  S3 --> E(["下一個測試"])
+  class T,E ext
+  class D app
+  class ISO store
+  class I1,I2,I3 hot
+  class ALWAYS db
+  class S1,S2,S3 db
+</pre>
+      </div>
+      <figcaption>圖 2　關掉隔離只拿掉紅框那一段。綠框（application boot）兩條路都要付，所以要另外處理，第 08 步的 morph map 才有那麼大的空間。</figcaption>
+    </figure>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr><th>隔離多付的步驟</th><th>我們的觀察</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="what"><b>啟動 PHP 直譯器、載入擴充</b></td>
+            <td class="what">屬於逐測試地板（最快的測試也要 0.478s）。單獨佔多少沒有量過</td>
+          </tr>
+          <tr>
+            <td class="what"><b>重跑 autoload、載入設定、bootstrap</b></td>
+            <td class="what">重跑 autoloader</td>
+          </tr>
+          <tr>
+            <td class="what"><b>重新初始化 coverage driver</b></td>
+            <td class="what">重新初始化 coverage driver</td>
+          </tr>
+          <tr>
+            <td class="what"><b>序列化、反序列化結果與覆蓋率</b></td>
+            <td class="what">推論有成本，<b>沒有單獨量過</b></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="findings">
+      <div class="finding">
+        <h3>「fork」其實是 proc_open</h3>
+        <p>
+          不是 <span class="m">fork()</span> 複製父 process，而是用 <span class="m">proc_open</span> 啟動一個<b>全新的直譯器</b>，
+          父 process 的記憶體狀態一概不帶過去。這也是它能擋住全域狀態污染的原因。
+        </p>
+      </div>
+      <div class="finding">
+        <h3>父 process 在等，記憶體卻還在</h3>
+        <p>
+          父 process 阻塞在 <span class="m">stream_get_contents</span>，所以同一個 worker 同一時刻只有 1 個子 process。
+          但父的記憶體仍占著，所以是「父 + 子」2 份。<b>這是推論，與 09-07 的 OOM 吻合，沒有直接量測。</b>
+        </p>
+      </div>
+      <div class="finding">
+        <h3>為什麼要有它，誰真的需要</h3>
+        <p>
+          換來的是狀態隔離：全域變數、靜態屬性、<span class="m">putenv</span>、已定義的類別都不會漏到下一個測試。
+          專案裡只有2 個模組路由測試類依賴它：它們用 <span class="m">putenv('APP_NAME=模組名稱')</span> 決定路由，
+          而 route 的 <span class="m">-&gt;domain(...)</span> 在註冊時就編譯進去。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="s-chain">
+    <h2><span class="n">過程</span>決策鏈</h2>
+    <p class="sec-note">9 個轉折，同一個 0–1200 秒刻度。一輪 = unit 與 feature 併行取較長者。左欄標每支 job 的 worker 數：基準是 16，02 步起全程固定 2</p>
+
+    <div class="steps">
+
+      <div class="step">
+        <div class="rail"><span class="ord">基準</span><span class="wk">16 workers</span></div>
+        <div class="step-body">
+          <div class="step-head"><span class="step-title">原始設定：16 processes + processIsolation</span></div>
+          <p class="why">每個 test method 一個 fork，2 個 job 排在同一台 16 核 runner 上，等於一起要 32 個行程。</p>
+          <div class="bar-row">
+            <span class="bar-sub">unit 1118.3 · feature 1120.8</span>
+            <span class="track"><span class="fill" style="width:93.4%"></span></span>
+            <span class="bar-val">1120.8s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><span class="ord">01</span></div>
+        <div class="step-body">
+          <div class="step-head">
+            <span class="step-title"><code>--filter</code> 改成 <code>--testsuite</code></span>
+            <span class="tag integrity">量測前提</span>
+          </div>
+          <p class="why">
+            <b>不為省時間，為了讓後面所有數字可比。</b>
+            <code>--filter</code> 比對的是 <span class="m">FQCN::method</span> 子字串，
+            所以 <span class="m">--filter=Unit</span> 把 18 個方法名含 “Unit” 的 Feature 測試
+            （單價、單位）也選進 unit job。選集不先修好，之後每一輪都是在比較不同的測試集合。
+          </p>
+          <p class="no-bar">選集從 1711 收斂到 1693。此步不追求縮短時間。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><span class="ord">02</span><span class="wk">2 workers</span></div>
+        <div class="step-body">
+          <div class="step-head">
+            <span class="step-title"><code>--coverage</code> 移到 <code>--processes</code> 前面</span>
+            <span class="tag integrity">量測前提</span>
+          </div>
+          <p class="why">
+            <b>先修煞車，再踩油門。</b>
+            <code>artisan test</code> 呼叫 <span class="m">ignoreValidationErrors()</span>，
+            Symfony 碰到第一個它不認識的選項就停止綁定後面的，而 <code>--processes</code> 是 ParaTest 的不是 Laravel 的。
+            順序錯時 <span class="m">option('coverage')</span> 讀成 false，
+            <span class="m">Total: xx %</span> 那行消失，
+            但 cobertura 和 html 照樣產出、coverage-gate 照樣過，job 仍是綠的。
+            優化測試時間最大的風險就是偷偷換掉覆蓋率，所以這一步排在所有效能改動之前。
+          </p>
+          <p class="no-bar">該輪 <span class="m">coverage=None</span>：綠燈，數字卻不見了。同一輪也是第一次把 worker 從 16 降到 2，當時 processIsolation 還開著，unit 1460.3s。</p>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><span class="ord">03</span><span class="wk">2 workers</span></div>
+        <div class="step-body">
+          <div class="step-head"><span class="step-title">關掉 <code>processIsolation</code></span></div>
+          <p class="why">
+            地板的來源，也是唯一能一次砍掉整個地板的旋鈕，所以最先攻。
+            剩下的問題只是誰真的需要隔離，triage 出只有2 個模組路由測試類。
+          </p>
+          <div class="bar-row">
+            <span class="bar-sub">unit 467.2 · feature 298.5</span>
+            <span class="track"><span class="fill" style="width:38.9%"></span></span>
+            <span class="bar-val">467.2s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><span class="ord">04</span><span class="wk">2 workers</span></div>
+        <div class="step-body">
+          <div class="step-head"><span class="step-title">postgres 關掉耐久性設定</span></div>
+          <p class="why">
+            <b>瓶頸換人了：</b>unit 還有 467.2s，feature 只剩 298.5s。
+            unit 裡有 <span class="m">REFRESH MATERIALIZED VIEW</span> 和測試內產 xlsx 這類寫入密集的案例，
+            所以往 DB 寫入路徑找。DB 隨 job 建立和丟棄，耐久性買不到東西。
+            實測的不對稱正好驗證假設：unit 減 24%，feature 只減 1%，因為 feature 以讀取為主，
+            fixture 的少量 insert 包在會 rollback 的交易裡，不進 WAL 關鍵路徑。
+          </p>
+          <div class="bar-row">
+            <span class="bar-sub">unit 356.5 · feature 296.0</span>
+            <span class="track"><span class="fill" style="width:29.7%"></span></span>
+            <span class="bar-val">356.5s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><span class="ord">05</span><span class="wk">2 workers</span></div>
+        <div class="step-body">
+          <div class="step-head">
+            <span class="step-title">測試環境停用 Telescope</span>
+            <span class="tag noise">本機證據</span>
+          </div>
+          <p class="why">
+            它落在「每次 <span class="m">createApplication()</span> 都要付」這一類，
+            而那正是前一步已經證實有效的方向；沒有任何測試引用 Telescope，所以這個成本是純浪費。
+            這步刻意不靠 CI 數字支持：2.8% 小於單輪雜訊，證據來自本機 15 次 boot 的重複量測
+            （118.5ms → 108.5ms）。
+          </p>
+          <div class="bar-row">
+            <span class="bar-sub">unit 355.7 · feature 297.7</span>
+            <span class="track"><span class="fill" style="width:29.6%"></span></span>
+            <span class="bar-val">355.7s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><span class="ord">06</span><span class="wk">2 workers</span></div>
+        <div class="step-body">
+          <div class="step-head"><span class="step-title">seeder 只在資料表非空時才 truncate</span></div>
+          <p class="why">
+            固定成本壓下來之後，<span class="m">setUp</span> 的 seeding 浮上榜首。
+            <b>成本不在資料量而在清空動作</b>，線索是一組反比：
+            一組測試資料初始化程序 寫 23 筆花 868.2ms，
+            另一組初始化程序 寫 3833 筆只花 224.8ms。
+            Postgres 上 <span class="m">truncate()</span> 被編成
+            <span class="m">TRUNCATE ... RESTART IDENTITY CASCADE</span>，
+            CASCADE 沿 FK 圖從 <span class="m">groups</span> 走到 127 張表，
+            對已經是空的資料庫仍要 887.8ms。而 <span class="m">DatabaseTransactions</span>
+            剛把上一個測試 rollback，所以幾乎每次呼叫時表都是空的。
+          </p>
+          <div class="bar-row">
+            <span class="bar-sub">unit 283.5 · feature 272.3</span>
+            <span class="track"><span class="fill" style="width:23.6%"></span></span>
+            <span class="bar-val">283.5s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><span class="ord">07</span><span class="wk">2 workers</span></div>
+        <div class="step-body">
+          <div class="step-head">
+            <span class="step-title">訂單服務測試只 seed 讀得到的資料</span>
+            <span class="tag noise">CI 無回報</span>
+          </div>
+          <p class="why">
+            同一個方向再往下一層，這次針對「灌多少資料」而不是「怎麼清空」。
+            這個類的 54 個方法原本每個都灌 5059 筆，逐一移除再看誰失敗可分成4 群：
+            19 個完全不需要、29 個只要 groups 加 categories、5 個還要 items 和 warehouses、只有 1 個要 stock。
+            <b>本機 212.4s → 189.1s，但 CI 反而從 283.5s 變成 288.0s。</b>
+            改動保留（那份分類確實成立），但這個沒有回報的結果就是 seeding 這條路線邊際效益見底的訊號。
+          </p>
+          <div class="bar-row">
+            <span class="bar-sub">unit 288.0 · feature 280.4</span>
+            <span class="track"><span class="fill" style="width:24.0%"></span></span>
+            <span class="bar-val">288.0s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><span class="ord">08</span><span class="wk">2 workers</span></div>
+        <div class="step-body">
+          <div class="step-head"><span class="step-title">morph map 改讀進版控的檔案</span></div>
+          <p class="why">
+            因為上一步在 CI 上沒有回報，所以退回最初的判斷「成本在每次 boot」重新找，
+            這次不看測試碼、改看 application boot 本身。
+            morph map 初始化程序每次開機都掃描 model 目錄、
+            實例化 model、呼叫 <span class="m">getTable()</span> 推導 morph 別名，約 100ms，
+            而每個測試 boot 一次。改成產生 morph map 對照檔 並進版控，
+            boot 時只 <span class="m">require</span> 一個字面陣列。
+            <b>全程唯一一次雙位數百分比跳躍，而且歸因乾淨：</b>前後2 個 pipeline 之間只差那 5 個檔案。
+          </p>
+          <div class="bar-row">
+            <span class="bar-sub">unit 161.5 · feature 155.9</span>
+            <span class="track"><span class="fill best" style="width:13.5%"></span></span>
+            <span class="bar-val">161.5s</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="rail"><span class="ord">09</span><span class="wk">2 workers</span></div>
+        <div class="step-body">
+          <div class="step-head">
+            <span class="step-title">2 個模組路由測試類不再 fork</span>
+            <span class="tag noise">雜訊內</span>
+          </div>
+          <p class="why">
+            收掉第 03 步留下的尾巴。卡點不是 <span class="m">config('app.name')</span>（可變 config），
+            而是 route group 上的 <span class="m">-&gt;domain(...)</span>：domain 約束在註冊時就編譯進
+            RouteCollection，事後改 config 無效，所以只能在 boot 前 <span class="m">putenv()</span>，
+            而那是 process-global。正解是重註冊 route 時不帶 domain。省掉 12 個 fork，
+            也解除了 opcache 被卡住的其中一個理由。
+          </p>
+          <div class="bar-row">
+            <span class="bar-sub">unit 168.0 · feature 155.0</span>
+            <span class="track"><span class="fill" style="width:14.0%"></span></span>
+            <span class="bar-val">168.0s</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="s-workers">
+    <h2><span class="n">實驗</span>Worker 數對照</h2>
+    <p class="sec-note">unit 與 feature 排在同一台 runner，所以 runner 上的 PHP 行程數 = worker 數 × 2</p>
+
+    <div class="prose">
+      <p>
+        優化過程的 pipeline 裡 worker 數改過5 次：16 → 2 → 4 → 2 → 4 → 2。
+        <strong>常被記成「8 個 CPU」的那組，就是每支 job 4 workers，2 支 job 加起來 8 個 PHP 行程。</strong>
+        沒有跑過每支 job 8 workers 的設定。
+      </p>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr>
+
+            <th>workers / job</th>
+            <th class="r">runner 行程</th>
+            <th>其他設定</th>
+            <th class="r">unit</th>
+            <th class="r">feature</th>
+            <th>說明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="wpill"><b>16</b></span></td>
+            <td class="num">32 + 每測試 fork</td>
+            <td class="note">processIsolation 開</td>
+            <td class="num">1118.3s</td>
+            <td class="num">1120.8s</td>
+            <td class="note">原始基準。同一份程式碼在另一次執行時被 OOM 殺掉，已在臨界點上</td>
+          </tr>
+          <tr>
+            <td><span class="wpill"><b>未指定</b></span></td>
+            <td class="num">—</td>
+            <td class="note">isolation 開 + <code>cacheDirectory</code></td>
+            <td class="num ci">OOM</td>
+            <td class="num ci">OOM</td>
+            <td class="note">2 支 job 都被 signal 9 殺掉，重試 2 次相同（見否決區）</td>
+          </tr>
+          <tr>
+            <td><span class="wpill"><b>2</b></span></td>
+            <td class="num">4 + 每測試 fork</td>
+            <td class="note">processIsolation 開</td>
+            <td class="num">1460.3s</td>
+            <td class="num">1369.5s</td>
+            <td class="note"><b>比 16 workers 還慢 30%</b>，但不再 OOM。當時 worker 數被 isolation 的記憶體壓力卡住</td>
+          </tr>
+          <tr>
+            <td><span class="wpill"><b>2</b></span></td>
+            <td class="num">4</td>
+            <td class="note">isolation 關</td>
+            <td class="num">467.2s</td>
+            <td class="num">298.5s</td>
+            <td class="note">決策鏈第 03 步</td>
+          </tr>
+          <tr class="w4">
+            <td><span class="wpill"><b>4</b></span></td>
+            <td class="num">8</td>
+            <td class="note">isolation 關</td>
+            <td class="num">377.6s</td>
+            <td class="num">328.8s</td>
+            <td class="note">第一次試 4。unit −19%，feature +10%。下一輪同時改回 2 workers 並關掉 postgres 耐久性，兩項沒有分開量</td>
+          </tr>
+          <tr>
+            <td><span class="wpill"><b>2</b></span></td>
+            <td class="num">4</td>
+            <td class="note">+ postgres 關耐久性</td>
+            <td class="num">356.5s</td>
+            <td class="num">296.0s</td>
+            <td class="note">決策鏈第 04 步</td>
+          </tr>
+          <tr>
+            <td><span class="wpill"><b>2</b></span></td>
+            <td class="num">4</td>
+            <td class="note">+ 停用 Telescope</td>
+            <td class="num">355.7s</td>
+            <td class="num">297.7s</td>
+            <td class="note">決策鏈第 05 步</td>
+          </tr>
+          <tr class="w4">
+            <td><span class="wpill"><b>4</b></span></td>
+            <td class="num">8</td>
+            <td class="note">同前一組設定</td>
+            <td class="num">325.0s</td>
+            <td class="num">307.7s</td>
+            <td class="note">重試 4。unit CPU 591s → 1086s（+84%），p50 0.253s → 0.494s，feature 反而變慢</td>
+          </tr>
+          <tr>
+            <td><span class="wpill"><b>2</b></span></td>
+            <td class="num">4</td>
+            <td class="note">同設定，改回 2</td>
+            <td class="num">325.7s</td>
+            <td class="num">272.3s</td>
+            <td class="note">2 workers 自己跑出 325.7s，抵銷了 4 workers 的「改善」</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="findings">
+      <div class="finding">
+        <h3>isolation 開著時，worker 數只能用來躲 OOM</h3>
+        <p>
+          16 workers 會 OOM，降到 2 不會 OOM 但慢 30%（1118.3s → 1460.3s）。
+          <b>2 個方向都不好，所以根本解是關掉 isolation</b>，而不是調 worker 數。
+        </p>
+      </div>
+      <div class="finding">
+        <h3>isolation 關掉後，4 比 2 沒有穩定的收益</h3>
+        <p>
+          2 次試 4 的 unit 都比上一輪 2 workers 快，但同設定的 2 workers 重跑就到 325.7s。
+          feature 2 次都變慢（+10%、+3%）。<b>CPU 卻穩定多 84%</b>，所以最後定在 2。
+        </p>
+      </div>
+      <div class="finding">
+        <h3>預估 265s，實測 325s</h3>
+        <p>
+          當時的算法：unit 測試本身 808s CPU，序列部分（pcov 編譯、migrate、cache warm、報告、建 worker DB）只有 63s，
+          照 Amdahl 推 4 workers 應該約 265s。<b>實測差 60s，就是2 支 job 在同一台 runner 互搶 CPU 的代價</b>。
+        </p>
+      </div>
+      <div class="finding">
+        <h3>平行效率 83%，瓶頸不是分派</h3>
+        <p>
+          worker 沒閒著，但每個測試的 p50 翻倍。
+          <b>代表共用資源（CPU、同一個 postgres）飽和了</b>，再加 worker 只會讓每個測試更慢。
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section id="s-rejected">
+    <h2><span class="n">實驗</span>6 項否決</h2>
+    <p class="sec-note">每一項都實作並量測過。留在紀錄裡，才不會有人重跑一遍</p>
+
+    <div class="ledger">
+
+      <div class="rej">
+        <h3>測試設定 設 <code>cacheDirectory</code></h3>
+        <p class="vd">否決 · 2 個 job OOM</p>
+        <p>
+          原本被判斷為主因之一，<b>結果是錯的</b>。2 支 job 都被 <span class="m">signal 9</span> 打死
+          ，重試 2 次相同。Laravel 本來就會補
+          <span class="m">/tmp/__laravel_test_cache_directory</span>，
+          這個改動只是把它搬到 bind mount 的 build 目錄，
+          <span class="m">842 cache hits</span> 變成 <span class="m">842 cache misses</span>。
+        </p>
+      </div>
+
+      <div class="rej">
+        <h3><code>CREATE DATABASE … TEMPLATE</code> 預建 worker DB</h3>
+        <p class="vd">否決 · 與被取代者同一區間</p>
+        <p>
+          88MB clone 冷的 2.87s、熱的 0.77s，16 份序列跑 16 到 46s，
+          跟它要取代的 Laravel 併發建 DB（23 到 40s）落在同一區間。
+          併發 clone 沒用：<b>Postgres 會對 template 上鎖。</b>
+          因此 CI 仍使用 <code>--recreate-databases</code>。
+        </p>
+      </div>
+
+      <div class="rej">
+        <h3><code>pcov.directory=app</code> 與 <code>config:cache</code></h3>
+        <p class="vd">否決 · 落在雜訊內（±3%）</p>
+        <p>
+          <span class="m">config:cache</span> 沒效果這件事本身有用：
+          <b>成本不在讀 config 檔，在建容器時 register 與 boot 那 52 個 provider。</b>
+          這個否決結果後來直接指向第 08 步。
+        </p>
+      </div>
+
+      <div class="rej">
+        <h3>4 個平行行程</h3>
+        <p class="vd">否決 · 8.8% 換 84% CPU</p>
+        <p>
+          表面上一輪 356.5s → 325.0s，但<b>同設定的 2 workers 後來自己跑出 325.7s</b>，
+          差異整個落在變異範圍內。代價卻是確定的：unit CPU 591s → 1086s，
+          p50 0.253s → 0.494s，平行效率仍有 83%（worker 沒閒著，是每個測試都變慢），
+          feature 在 4 反而從 296.0s 變成 307.7s。逐輪數據見「Worker 數對照」，完整推理見「為什麼不直接加 CPU 或 worker」。
+        </p>
+      </div>
+
+      <div class="rej">
+        <h3>worker 啟用 opcache</h3>
+        <p class="vd">否決 · 速度與指標是同一個旋鈕</p>
+        <p>
+          速度是真的：每測試 214.6ms → 189.2ms，減 11.7%。
+          但加上 <span class="m">optimization_level=0</span> 只剩減 2%，落在雜訊內，
+          <b>證明效益全來自最佳化階段而非省掉重複編譯</b>。
+          而最佳化正是覆蓋率位移的原因：lines-valid 從 44803 掉到 44476，
+          327 行不再被 pcov 當成可執行行，也就是 44.0 → 43.6。
+        </p>
+      </div>
+
+      <div class="rej">
+        <h3>用反射讀 table 名（morph map 的替代解）</h3>
+        <p class="vd">否決 · 只是剛好對</p>
+        <p>
+          只省 65%（仍 45–56ms/boot，對比讀檔的 0.2ms），
+          而且它<b>只是剛好正確</b>：有一個 model 覆寫 <span class="m">getTable()</span> 加了 schema 前綴。
+          morph 別名會寫進各表的 <span class="m">*_type</span> 欄位，
+          <b>猜錯是資料損毀而不是測試失敗</b>，這種地方不能用近似解。
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="s-scale">
+    <h2><span class="n">資源配置分析</span>為什麼不直接加 CPU 或 worker</h2>
+    <p class="sec-note">最可能被問的第一個問題。答案分成實測、機制、以及我們沒有量到的部分</p>
+
+    <div class="prose">
+      <p>
+        <strong>浪費的是「每個測試重複做的事」，加機器只是讓更多行程一起重複。</strong>
+        固定成本拿掉之後，一輪是 161.5 秒，硬體花費是零。
+        加 worker 的實測結果如下，基準是第 04 步之後的設定（356.5s）：
+      </p>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr>
+            <th>量測</th>
+            <th style="text-align:right">2 workers</th>
+            <th style="text-align:right">4 workers</th>
+            <th>判讀</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="what"><b>一輪（unit）</b></td>
+            <td class="num">356.5s</td>
+            <td class="num">325.0s</td>
+            <td class="what">表面 −8.8%</td>
+          </tr>
+          <tr>
+            <td class="what"><b>同設定的重跑</b></td>
+            <td class="num">325.7s</td>
+            <td class="num">—</td>
+            <td class="what ci">2 workers 自己就跑出 4 workers 的數字</td>
+          </tr>
+          <tr>
+            <td class="what"><b>unit CPU 總量</b></td>
+            <td class="num">591s</td>
+            <td class="num ci">1086s</td>
+            <td class="what">+84%</td>
+          </tr>
+          <tr>
+            <td class="what"><b>每測試 p50</b></td>
+            <td class="num">0.253s</td>
+            <td class="num ci">0.494s</td>
+            <td class="what">平行效率仍 83%：worker 沒閒著，是每個測試都變慢</td>
+          </tr>
+          <tr>
+            <td class="what"><b>feature 一輪</b></td>
+            <td class="num">296.0s</td>
+            <td class="num ci">307.7s</td>
+            <td class="what">反而更慢</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="scroller">
+      <table>
+        <thead>
+          <tr>
+            <th>同設定3 輪的 unit</th>
+            <th style="text-align:right">耗時</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="testname">第 1 次執行</td><td class="num">355.7s</td></tr>
+          <tr><td class="testname">第 2 次執行</td><td class="num">361.1s</td></tr>
+          <tr><td class="testname">第 3 次執行</td><td class="num">325.7s</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="prose" style="margin-top:1.4rem">
+      <p>
+        <strong>單輪全距約 11%。</strong>原因是 unit 與 feature 2 個 job 在同一台 runner 併行，
+        重疊的時間區間隨排隊狀況變動。所以 10% 以內的單輪差異都不算證據：
+        4 workers 就是被一個單輪數字誤判成有效。
+      </p>
+      <p>
+        <strong>機制上的2 個原因。</strong>
+        一，runner 是 16 核、2 個 job 共用，ParaTest 預設每核一個行程，2 個 job 就是 32 個，
+        所以才固定成 2。二，所有 worker 共用同一個 postgres 行程，DB 本身也是競爭資源。
+        第二點是推論，我們沒有單獨量過。
+      </p>
+    </div>
+
+    <p class="callout warn">
+      <b>OOM 與 worker 數的關係要分兩段講。</b>
+      processIsolation 開著時，16 workers 會 OOM、降到 2 就不 OOM，但慢 30%（見 Worker 數對照），
+      所以那時 worker 數只能拿來躲 OOM。isolation 關掉之後，2 次試 4 workers 都沒有 OOM 的紀錄，
+      <b>所以否決 4 workers 的依據不是 OOM</b>，而是：CPU +84%、一輪的改善落在雜訊內、feature 反而更慢。
+    </p>
+
+    <p class="callout">
+      <b>回答主管的版本：</b>
+      加機器可以把 1120 秒除以某個數，但每個測試仍然多做 100ms 的 boot 和一次 fork。
+      我們把重複的部分拿掉，一輪降到 161.5 秒，不需要更多硬體；
+      而且實測加 worker 在現在的設定下幾乎沒有收益。
+    </p>
+  </section>
+
+  <section id="s-qa">
+    <h2><span class="n">問答</span>可能被追問的問題</h2>
+    <p class="sec-note">每題附出處，避免現場回答時記錯</p>
+
+    <div class="qa">
+
+      <div class="qa-item">
+        <p class="qa-q">CI 每個 worker 是各自啟動一個 PostgreSQL 嗎？</p>
+        <p class="qa-a"><b>不是。</b>每個 job 一個 <code>postgres:16</code> service container，2 個 worker 共用，
+          各自使用獨立的 database（<span class="m">app_test_&lt;token&gt;</span>）。unit 與 feature 各有自己的一個 postgres。</p>
+      </div>
+
+      <div class="qa-item">
+        <p class="qa-q">覆蓋率有沒有被犧牲來換速度？</p>
+        <p class="qa-a"><b>沒有。</b>unit 全程維持 44.0；feature 從 42.6 變 42.5。
+          掉的 0.1 點不是回歸：新增的 morph map 產生程序屬於 production 程式碼，讓 lines-valid 變大，而 feature 測試碰不到它。
+          最前期的矩陣實驗用逐行 hits 的 md5 比對，3 種組合完全相同。</p>
+        <p class="qa-a">唯一會動到指標的選項是 opcache，所以被否決。</p>
+      </div>
+
+      <div class="qa-item">
+        <p class="qa-q">關掉 processIsolation，測試會不會互相污染？</p>
+        <p class="qa-a">已盤點。實際依賴隔離的只有 2 個模組路由測試類，
+          原因是它們靠 <span class="m">putenv('APP_NAME=模組名稱')</span> 決定註冊哪個模組的路由。
+          關掉隔離後在固定順序下實測會出現 <span class="m">Expected 200 but received 404</span>。
+          第 09 步之後這2 個類也不再 fork，改成重註冊 route。</p>
+        <p class="qa-a">驗證方式是突變測試：拿掉重註冊，12 個測試必須全部變紅。</p>
+      </div>
+
+      <div class="qa-item">
+        <p class="qa-q">morph map 進版控，之後新增 model 忘了更新怎麼辦？</p>
+        <p class="qa-a">CI 會擋。自動化測試逐位元比對版控檔與即時掃描的結果，過期就紅燈。
+          這個保護不能省，因為 morph 別名會寫進各表的 <span class="m">*_type</span> 欄位，
+          錯誤的別名是資料損毀，不是測試失敗。透過產生指令更新對照檔。</p>
+      </div>
+
+      <div class="qa-item">
+        <p class="qa-q">morph map 的改動對 production 有影響嗎？</p>
+        <p class="qa-a">行為不變，只是來源從「每次開機掃描」變成「讀一個陣列檔」。
+          有一個更正值得知道：最早的 static 記憶做法只對測試有效，
+          因為 PHP 在每個請求結束時會銷毀 static 變數，所以 production 每個請求原本都在重算（約 70ms）。
+          最終做法是讀檔，opcache 可跨請求保留。</p>
+        <p class="qa-a">production 的實際受益<b>預期有、但我們沒有量測過</b>。</p>
+      </div>
+
+      <div class="qa-item">
+        <p class="qa-q">日後 CI 又變慢，要怎麼判斷是哪一類問題？</p>
+        <p class="qa-a">先看逐測試耗時的形狀，再看排名：p10 / p50 / p90 擠在一起是固定成本，被拉開才是離群的慢測試。
+          透過 CI 的測試報告 API 取得數字，
+          比抓 junit artifact 可靠。看到成堆 <span class="m">child process ended unexpectedly</span>，
+          先 grep <span class="m">signal "9"</span>，不要追測試邏輯。
+          比較兩輪時記得單輪有約 11% 雜訊。</p>
+      </div>
+
+    </div>
+  </section>
+
+
+
+
+
+</div>
+
+<script>
+(function () {
+  var links = [].slice.call(document.querySelectorAll(".toc a"));
+  var secs = links.map(function (a) { return document.querySelector(a.getAttribute("href")); });
+  function update() {
+    var y = window.scrollY + 90, cur = 0;
+    secs.forEach(function (s, i) { if (s && s.offsetTop <= y) cur = i; });
+    links.forEach(function (a, i) { a.setAttribute("aria-current", i === cur ? "true" : "false"); });
+  }
+  window.addEventListener("scroll", update, { passive: true });
+  update();
+})();
+</script>
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#eaf1f4","text":"#203b55","line":"#165e83","border":"#165e83","bg":"#f7f5ef"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+
+<link rel="stylesheet" href="report-navigation.css">
+<script src="report-navigation.js?v=2"></script>
+</body></html>

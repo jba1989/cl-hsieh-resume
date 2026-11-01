@@ -1,0 +1,23 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>付款時序 Mermaid 對照版</title><style>
+:root{--paper:#f7f5ef;--ink:#203b55;--muted:#6b7980;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink)}.diagram{width:100%;overflow:auto;padding:22px}.eyebrow{margin:0 0 6px;font:10px ui-monospace,monospace;letter-spacing:.13em;color:var(--muted)}h1{margin:0 0 20px;font-size:20px}.mermaid-diagram svg{display:block;margin:auto;min-width:900px;height:auto}.mermaid-diagram .actor{fill:#fff!important;stroke:#203b55!important}.mermaid-diagram .actor-line{stroke:#9aa9af!important;stroke-dasharray:3 3}.mermaid-diagram .messageLine0{stroke:#165e83!important;stroke-width:1.4px}.mermaid-diagram .messageLine1{stroke:#6b7980!important;stroke-dasharray:5 4}.mermaid-diagram .messageText{fill:#203b55!important;font-size:12px}.mermaid-diagram .labelBox{fill:#f7f5ef!important;stroke:#dce4e7!important}.mermaid-diagram .labelText{fill:#6b7980!important}.note{margin:12px 0 0;color:var(--muted);font-size:12px}
+</style></head><body><div class="diagram"><p class="eyebrow">MERMAID + CSS REFERENCE VARIANT</p><h1>付款成功時序 · 系統色塊版</h1><pre class="mermaid">
+sequenceDiagram
+  autonumber
+  box rgb(234,241,244) 結帳服務
+    participant UI as 前端
+    participant API as API
+    participant H as 付款處理
+  end
+  box rgb(237,241,241) 資料與外部服務
+    participant DB as PostgreSQL
+    participant GW as Mock 金流
+  end
+  UI->>API: 建立訂單
+  API->>DB: BEGIN・保留庫存
+  DB-->>API: COMMIT
+  API-->>UI: 201 PENDING
+  UI->>H: 發起付款
+  H->>GW: charge（不持鎖）
+  GW-->>H: SUCCEEDED
+  H->>DB: 確認付款成功
+</pre><p class="note">同一系統的參與者置於同一個 Mermaid box；縱向即時間順序。這是以參考檔的 runtime 與 CSS 視覺規則渲染，而非手繪 SVG。</p></div><script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:'strict',theme:'base',sequence:{useMaxWidth:false},themeVariables:{background:'#f7f5ef',primaryColor:'#fff',primaryTextColor:'#203b55',primaryBorderColor:'#203b55',lineColor:'#6b7980',actorBkg:'#fff',actorBorder:'#203b55',actorTextColor:'#203b55',signalColor:'#6b7980',signalTextColor:'#203b55',labelBoxBkgColor:'#f7f5ef',labelTextColor:'#6b7980',fontFamily:getComputedStyle(document.body).fontFamily}});</script></body></html>

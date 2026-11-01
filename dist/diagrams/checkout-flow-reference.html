@@ -1,0 +1,34 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>結帳流程 Mermaid 對照版</title><style>
+:root{--paper:#f7f5ef;--ink:#203b55;--muted:#6b7980;--accent:#165e83;--client:#6b7980;--app:#165e83;--data:#547983;--external:#9a7742;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans TC","PingFang TC",sans-serif}*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink)}.diagram{width:100%;overflow:auto;padding:22px}.eyebrow{margin:0 0 6px;font:10px ui-monospace,monospace;letter-spacing:.13em;color:var(--muted)}h1{margin:0 0 20px;font-size:20px}.mermaid-diagram svg{display:block;margin:auto;min-width:900px;height:auto}.mermaid-diagram .cluster.client{--c:var(--client)}.mermaid-diagram .cluster.app{--c:var(--app)}.mermaid-diagram .cluster.data{--c:var(--data)}.mermaid-diagram .cluster.external{--c:var(--external)}.mermaid-diagram .cluster rect{fill:color-mix(in srgb,var(--c) 5%,white)!important;stroke:var(--c)!important;stroke-width:1.5px!important;stroke-dasharray:7 5;rx:10;ry:10}.mermaid-diagram .cluster-label .nodeLabel{color:var(--c)!important;font-weight:700}.mermaid-diagram .node.client{--c:var(--client)}.mermaid-diagram .node.app{--c:var(--app)}.mermaid-diagram .node.data{--c:var(--data)}.mermaid-diagram .node.external{--c:var(--external)}.mermaid-diagram .node :is(rect,polygon,path,circle,ellipse){fill:#fff!important;stroke:var(--c,var(--ink))!important;stroke-width:1.7px!important}.mermaid-diagram .node .nodeLabel{color:var(--ink)!important;font-size:13px}.mermaid-diagram .edgeLabel p{background:var(--paper)!important;padding:2px 6px;border-radius:4px;color:var(--muted)!important;font-size:11px}.note{margin:12px 0 0;color:var(--muted);font-size:12px}
+</style></head><body><div class="diagram"><p class="eyebrow">MERMAID + CSS REFERENCE VARIANT</p><h1>結帳流程 · 系統分組版</h1><pre class="mermaid">
+flowchart TB
+  subgraph CLIENT["前端"]
+    UI(["Vue SPA<br/>送出結帳"])
+  end
+  subgraph APP["結帳服務"]
+    direction LR
+    ORDER["建立訂單<br/>價格快照・保留庫存"]
+    PAY["發起付款<br/>不持有資料庫鎖"]
+    ORDER --> PAY
+  end
+  subgraph GATEWAY["外部金流"]
+    direction LR
+    GW["Mock Gateway"]
+    RESULT{"付款結果"}
+    GW --> RESULT
+  end
+  subgraph DATA["資料庫"]
+    DB[("PostgreSQL<br/>orders・payments・events")]
+  end
+  UI --> ORDER
+  PAY -->|charge| GW
+  RESULT -->|確認付款成功| DB
+  class UI client
+  class ORDER,PAY,RESULT app
+  class DB data
+  class GW external
+  class CLIENT client
+  class APP app
+  class DATA data
+  class GATEWAY external
+</pre><p class="note">來源是 Mermaid；虛線系統框與元件視覺由 CSS 套用。此圖只保留成功主路徑，付款失敗或結果不明則維持 PENDING，交由後續查詢與對帳處理。</p></div><script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script><script>mermaid.initialize({startOnLoad:true,securityLevel:'strict',theme:'base',flowchart:{useMaxWidth:false},themeVariables:{background:'#f7f5ef',primaryColor:'#fff',primaryTextColor:'#203b55',primaryBorderColor:'#203b55',lineColor:'#6b7980',clusterBkg:'rgba(22,94,131,.03)',clusterBorder:'#165e83',edgeLabelBackground:'#f7f5ef',fontFamily:getComputedStyle(document.body).fontFamily}});</script></body></html>

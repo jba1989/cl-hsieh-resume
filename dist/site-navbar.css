@@ -1,0 +1,50 @@
+/* Shared homepage navigation, isolated from individual article styles. */
+.site-navbar {
+  display: block;
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 10;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-bottom: 1px solid #dce4e7;
+  background: #ffffff9c;
+  backdrop-filter: blur(12px);
+  color: #273948;
+  font: 16px/1.85 -apple-system, BlinkMacSystemFont, 'Noto Sans TC', 'PingFang TC', sans-serif;
+  text-align: left;
+}
+.site-navbar .site-navbar-inner {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1160px;
+  height: 72px;
+  padding: 0 32px;
+  margin: 0 auto;
+}
+.site-navbar .site-navbar-logo { font-weight: 800; letter-spacing: .1em; color: #165e83; }
+.site-navbar .site-navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  color: #165e83;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: .1em;
+}
+.site-navbar .site-navbar-links a { color: #165e83; text-decoration: none; white-space: nowrap; }
+.site-navbar .site-navbar-links a:hover,
+.site-navbar .site-navbar-links a:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
+.site-navbar .site-navbar-links span { color: #165e83; font-size: 11px; }
+.site-navbar-spacer { height: var(--site-navbar-height, 73px); flex-shrink: 0; }
+body.has-site-navbar h2[id] { scroll-margin-top: calc(var(--site-navbar-height, 73px) + 20px); }
+@media (max-width: 780px) {
+  .site-navbar .site-navbar-inner { height: auto; min-height: 64px; gap: 12px; padding: 10px 18px; }
+  .site-navbar .site-navbar-links { flex-wrap: wrap; justify-content: flex-end; gap: 4px 6px; font-size: 11px; }
+  .site-navbar .site-navbar-links span { font-size: 10px; }
+}

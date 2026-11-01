@@ -1,0 +1,50 @@
+/* Match the resume's Contents sidebar without changing article typography. */
+.report-navigation {
+  box-sizing: border-box;
+  color: #203b55;
+  background: #f7f5ef;
+  padding: 0;
+  margin: 0 auto 24px;
+  max-width: 980px;
+  text-align: left;
+  font-family: -apple-system, BlinkMacSystemFont, 'Noto Sans TC', 'PingFang TC', sans-serif;
+  line-height: 1.85;
+}
+.report-navigation > p {
+  margin: 12px 0;
+  font: 700 12px/1.85 -apple-system, BlinkMacSystemFont, 'Noto Sans TC', 'PingFang TC', sans-serif;
+  letter-spacing: .12em;
+  color: #6b7980;
+}
+.report-navigation > a {
+  display: block;
+  padding: 10px 0;
+  border-bottom: 1px solid #dce4e7;
+  font: 400 14px/1.85 -apple-system, BlinkMacSystemFont, 'Noto Sans TC', 'PingFang TC', sans-serif;
+  letter-spacing: normal;
+  color: #203b55;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+.report-navigation > a:hover,
+.report-navigation > a[aria-current] { color: #165e83; }
+.report-navigation > a:focus-visible { outline: 2px solid #165e83; outline-offset: 2px; }
+@media (min-width: 1100px) {
+  /* Resume container: 1160px including 32px gutters, 230px sidebar + 58px gap. */
+  body.report-with-navigation {
+    padding-left: calc(max(32px, (100vw - 1096px) / 2) + 288px);
+    padding-right: max(32px, (100vw - 1096px) / 2);
+  }
+  body.case-page.report-with-navigation { max-width: none; margin: 0; }
+  .report-with-navigation > main.case-page,
+  .report-with-navigation > .docs-shell { padding-left: 0; padding-right: 0; }
+  .report-navigation {
+    position: fixed;
+    top: 105px;
+    left: max(32px, (100vw - 1096px) / 2);
+    width: 230px;
+    max-height: calc(100dvh - 137px);
+    overflow-y: auto;
+    margin: 0;
+  }
+}

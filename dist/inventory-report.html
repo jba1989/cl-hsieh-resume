@@ -1,0 +1,335 @@
+<!doctype html><html lang="zh-Hant" data-theme="light"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><link rel="stylesheet" href="site-navbar.css?v=2">
+<script src="site-navbar.js" defer></script>
+</head><body>
+<title>MRP 庫存 API 重構分享</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: single reading column, summary first, then evidence, then decisions as a table */
+:root{
+  --bg:#f7f5ef; --surface:#ffffff; --fg:#273948; --muted:#6b7980; --line:#dce4e7;
+  --accent:#165e83; --accent-soft:#eaf1f4; --warn:#203b55; --warn-soft:#e7edf1; --ok:#165e83;
+  --font-body:"Noto Sans TC",system-ui,-apple-system,"PingFang TC","Microsoft JhengHei",sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.75;
+  padding-block:40px 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+section{display:flex;flex-direction:column;gap:14px;min-width:0}
+h1{color:#203b55;font-size:clamp(1.6rem,4.5vw,2.2rem);line-height:1.3;margin:0;text-wrap:balance}
+h2{color:#203b55;font-size:1.35rem;margin:0;text-wrap:balance;padding-bottom:8px;border-bottom:1px solid var(--line)}
+h3{font-size:1.05rem;margin:8px 0 0}
+p{margin:0;max-width:68ch}
+ul,ol{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:6px;max-width:68ch}
+code{font-family:var(--font-mono);font-size:.88em;background:var(--accent-soft);padding:1px 6px;border-radius:4px}
+.eyebrow{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.lede{font-size:1.1rem;color:var(--muted)}
+.meta{font-family:var(--font-mono);font-size:.82rem;color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.stat{background:var(--surface);border:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.stat b{font-size:1.7rem;line-height:1.2;color:var(--accent);font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:.9rem}
+.callout{background:var(--warn-soft);border-left:4px solid var(--warn);padding:14px 16px;max-width:68ch}
+.callout.info{background:var(--accent-soft);border-color:var(--accent)}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;min-width:640px;background:var(--surface);font-size:.94rem;line-height:1.6}
+th,td{border:1px solid var(--line);padding:10px 12px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft);font-weight:700}
+td.n{font-variant-numeric:tabular-nums;font-family:var(--font-mono);white-space:nowrap}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.col{background:var(--surface);border:1px solid var(--line);padding:16px;min-width:0}
+.col h3{margin-top:0}
+.timeline{list-style:none;padding:0;gap:0;max-width:none}
+.timeline li{display:grid;grid-template-columns:7.5em 1fr;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
+.timeline li b{color:var(--accent)}
+@media (max-width:520px){.timeline li{grid-template-columns:1fr;gap:2px}}
+pre.mermaid{background:var(--surface);border:1px solid var(--line);padding:12px;overflow-x:auto;margin:0}
+pre.code{background:var(--surface);border:1px solid var(--line);padding:12px 14px;overflow-x:auto;margin:0;font-family:var(--font-mono);font-size:.85rem;line-height:1.6}
+.tag{font-family:var(--font-mono);font-size:.75rem;padding:1px 6px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.tag.inf{color:var(--warn);border-color:var(--warn)}
+footer{color:var(--muted);font-size:.88rem}
+</style>
+
+<main>
+<header style="display:flex;flex-direction:column;gap:12px">
+  <h1>庫存 API 從 3 秒降到 0.4 秒：我們怎麼找到真正的慢點，又為什麼有些東西刻意不動</h1>
+  <p class="lede">2 支機種庫存 API（<code>modelInventory</code>、<code>modelInventoryCeoView</code>）當年為了老闆的特殊需求，刻意各自獨立。需求穩定幾個月後，我們趁機把共用邏輯整合，並順手處理查詢過多的效能問題。這份報告說明為什麼現在做、怎麼確認慢點、哪個判斷差點讓我們修錯地方，以及每個取捨的理由。</p>
+</header>
+
+<section>
+  <h2>30 秒概覽</h2>
+  <div class="stats">
+    <div class="stat"><b>−86%</b><span>單支 API 的後端執行時間：3080 ms → 427 ms</span></div>
+    <div class="stat"><b>210 → 14</b><span>每次請求對資料庫的查詢數</span></div>
+    <div class="stat"><b>0.985 s</b><span>重構後，使用者端完整 HTTP 請求的時間（dev 站台）</span></div>
+  </div>
+  <ul>
+    <li><b>背景：</b>CEO 檢視是老闆的特殊需求，當時為了讓2 個頁面互不影響，刻意複製成2 支獨立 API，程式碼因此高度相似。這在當時是合理的設計。</li>
+    <li><b>為什麼現在整合：</b>老闆已使用幾個月，沒有再提新需求，行為已經穩定，隔離的必要性下降，維護2 份的成本變成主要負擔。</li>
+    <li><b>順手發現的效能問題：</b>「近6 個月平均銷量」在迴圈裡重複查遠端資料庫，一次請求往返 108 次，佔整支 API 71% 的時間。</li>
+    <li><b>做法：</b>把共用邏輯抽成3 個可獨立測試的單元，再把迴圈裡的重複查詢合併。2 支 controller 各剩 4 行。</li>
+    <li><b>風險控制：</b>先證明重構前後輸出一致，再談變快；不改任何業務計算方式（location、order_id）；新增分支用突變測試確認測試真的有效。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>1. 背景與問題</h2>
+  <p>機種庫存頁原本只有1 支 API。後來老闆提出特殊需求（CEO 檢視），而且當時需求還在變。為了讓改 CEO 頁面時不會影響原本頁面，團隊選擇把邏輯複製成第 2 支 API，2 邊各自演進。當時預期2 支會高度相似，這是有意的取捨：用重複換取隔離與改動安全。</p>
+  <p>現在狀況變了：CEO 檢視已上線並使用數個月，沒有新需求進來。隔離帶來的好處已經用不到，2 份相似的程式碼卻持續增加維護成本，也正好是整合與優化的時機。</p>
+  <div class="cols">
+    <div class="col">
+      <h3>現況 A：2 份相似的邏輯</h3>
+      <p>2 支 controller 分別 215 行與 242 行，彼此只差 49 行。差異集中在 CEO 檢視多出的欄位，篩選、分頁、銷量彙總基本相同。</p>
+      <p style="margin-top:8px"><b>現在的成本：</b>SQL 或邏輯修正要改2 處，需求穩定後這份隔離保護已不再需要。</p>
+    </div>
+    <div class="col">
+      <h3>現況 B：N+1 查詢</h3>
+      <p><code>getMonthlyAverageSalesSummary</code> 放在「6 個月」迴圈裡，每個月都重新聚合一次。每個月要對遠端資料庫往返 18 次（<code>pluck</code>、對照查詢、<code>get</code>），6 個月累計 <b>108 次</b>。</p>
+      <p style="margin-top:8px"><b>代價：</b>占整支 API 執行時間 71%，一次請求共 210 條查詢。</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>2. 怎麼確認慢點</h2>
+  <ol class="timeline">
+    <li><b>分段計時</b><span>把一次請求切成幾個階段分別計時，找出最耗時的位置：<code>getMonthlyAverageSalesSummary</code>，占整支 API 71% 的執行時間。</span></li>
+    <li><b>拆解這一段</b><span>它放在6 個月迴圈裡，每個月重新聚合，對遠端資料庫往返 18 次（<code>pluck</code>、對照查詢、<code>get</code>），6 個月共 108 次。</span></li>
+    <li><b>判斷瓶頸</b><span>時間壓倒性花在資料庫往返，而不是 PHP 端的運算。優化方向因此鎖定在「減少往返次數」。</span></li>
+    <li><b>算出全貌</b><span>整支 API 一次請求共 210 條查詢，迴圈內的 108 次是最大的一塊。</span></li>
+  </ol>
+</section>
+
+<section>
+  <h2>3. 解法與架構</h2>
+  <pre class="mermaid">
+flowchart LR
+  subgraph 重構前
+    A1[modelInventory controller 215 行] --> X1[篩選 / 分頁 / 彙總 各自一份]
+    A2[CeoView controller 242 行] --> X2[篩選 / 分頁 / 彙總 各自一份]
+    X1 --> L1[6 個月迴圈內每月聚合 108 次往返]
+    X2 --> L1
+  end
+  </pre>
+  <pre class="mermaid">
+flowchart LR
+  subgraph 重構後
+    C1[modelInventory 4 行] --> S[ModelStockPageService 統一流程]
+    C2[CeoView 4 行] --> S
+    S --> Q[ModelInventoryQuery 解析 filter]
+    S --> M[彙總改為批次查詢 14 條]
+    S --> D[CeoInventoryDecorator 僅處理 CEO 差異]
+  end
+  </pre>
+  <div class="scroll"><table>
+    <tr><th>單元</th><th>責任</th><th>為什麼獨立出來</th></tr>
+    <tr><td><code>ModelInventoryQuery</code></td><td>解析前端 filter</td><td>集中處理篩選條件，與查詢流程分開測試</td></tr>
+    <tr><td><code>ModelStockPageService</code></td><td>統一查詢、分頁、組裝流程</td><td>2 支 API 共用，修一次2 邊生效</td></tr>
+    <tr><td><code>CeoInventoryDecorator</code></td><td>只放 CEO 檢視多出來的部分</td><td>把「差異」顯式化，避免再分叉</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>4. SQL 優化：時間是怎麼壓下來的</h2>
+  <p>這一節按「觀察 → 判斷 → 動作 → 結果」的順序說明。<span class="tag">筆記記錄</span> 表示原始筆記有寫；<span class="tag inf">推論</span> 表示我依筆記數字推算或補上的邏輯，分享前請對照 MR 確認。</p>
+
+  <h3>第 1 步：先決定要減「次數」還是減「單條時間」</h3>
+  <div class="scroll"><table>
+    <tr><th>觀察</th><th>判斷</th></tr>
+    <tr><td>聚合放在6 個月迴圈裡，每個月 18 次往返（<code>pluck</code>、對照查詢、<code>get</code>），共 108 次 <span class="tag">筆記記錄</span></td><td>資料庫在遠端，每次往返都有固定的網路與準備成本，與資料量無關。108 次往返的成本主要是「次數」，把某一條 SQL 調快幾毫秒救不了這個問題。<span class="tag inf">推論</span></td></tr>
+    <tr><td>迴圈的資料量本身不大（6 個月），但往返次數很多</td><td>先減次數，再談單條查詢的效率。這是優先順序的依據。<span class="tag inf">推論</span></td></tr>
+  </table></div>
+
+  <h3>第 2 步：確認瓶頸在資料庫，而不是 PHP 運算</h3>
+  <p>分段計時顯示，迴圈內聚合占整支 API 71% 的時間，而且時間壓倒性花在資料庫往返（<span class="tag">筆記記錄</span>）。判斷：優化資源應該放在減少往返，而不是改寫 PHP 端的計算。</p>
+
+  <h3>第 3 步：把「每月各查一次」合併成「一次查整段」</h3>
+  <p>迴圈內的 18 次往返（先 <code>pluck</code> 取 id、再對照、再 <code>get</code>）是典型的 N+1：先抓清單，再逐筆回頭查。改法的方向是把6 個月的區間一次送進資料庫，由 SQL 依月份分組統計，再把結果分配回各月。<span class="tag inf">推論</span></p>
+  <ul>
+    <li><b>為什麼這樣改：</b>資料庫處理「一次大範圍」的成本，遠小於「6 次小範圍加上6 次往返」。</li>
+    <li><b>實際效果：</b>整支 API 的查詢數從 210 減到 14。迴圈內的 108 次往返是其中最大的一塊，其餘約 88 條的減少來自哪些查詢，筆記沒有逐項記錄。<span class="tag inf">推算</span></li>
+    <li><b>順手的效果：</b>重構時把查詢收進 <code>ModelStockPageService</code>，2 支 API 都共用同一次改善。</li>
+  </ul>
+
+  <h3>第 4 步：用算術檢查一下，這個改法多大程度解釋了成果</h3>
+  <div class="scroll"><table>
+    <tr><th>推算</th><th>數字</th><th>說明</th></tr>
+    <tr><td>迴圈內聚合佔 API 時間的 71%</td><td class="n">≈ 2187 ms</td><td>3080 ms × 71%。<span class="tag inf">推算</span></td></tr>
+    <tr><td>只消除迴圈這塊的理論下限</td><td class="n">≈ 893 ms</td><td>3080 − 2187。<span class="tag inf">推算</span></td></tr>
+    <tr><td>實際重構後</td><td class="n">427 ms</td><td>比「只減迴圈」的下限還低約 466 ms，顯示其他的查詢也被一併減少，和查詢數降得比 108 還多一致。<span class="tag inf">推算</span></td></tr>
+  </table></div>
+
+  <h3>第 5 步：materialized view 的區間條件，讓索引吃得到</h3>
+  <p>月銷量彙總讀的是 materialized view，區間條件原本用算術式。<span class="tag">筆記記錄</span></p>
+  <pre class="code">-- 原寫法：欄位被包進運算式，(sales_year, sales_month) 索引用不到
+WHERE (sales_year * 12 + sales_month) BETWEEN :start AND :end
+
+-- 改寫：欄位保持裸露，語意相同，索引可用
+WHERE (sales_year, sales_month) &gt;= (:start_year, :start_month)
+  AND (sales_year, sales_month) &lt;= (:end_year, :end_month)</pre>
+  <p class="meta">上面是示意寫法，參數名稱為我自訂，實際 SQL 請以 MR 為準。</p>
+  <ul>
+    <li><b>為什麼語意等價：</b>月份範圍是 1 到 12，「先比年、年相同再比月」的字典序，與「年×12 + 月」的時間順序完全一致，所以結果不變。<span class="tag inf">推論</span></li>
+    <li><b>為什麼要做：</b>單條查詢從 5.8 ms 降到 1.9 ms（<span class="tag">筆記記錄</span>），絕對值不大，但修改點很小、語意不變、沒有新的風險，屬於「順手做得到的」優化。</li>
+    <li><b>為什麼不是主角：</b>這步省下的時間遠小於第 3 步。先減次數、再調單條，順序不能反。</li>
+  </ul>
+
+  <h3>每一步的共同原則</h3>
+  <ul>
+    <li><b>不碰業務語意：</b>location、order_id 的計算方式不動。優化只改「怎麼取資料」，不改「資料是什麼」。</li>
+    <li><b>每改一次就比對輸出：</b>以 favorites 資料為語料，確認輸出與重構前相同，再看時間和查詢數。</li>
+    
+  </ul>
+
+
+</section>
+
+<section>
+  <h2>5. 判斷與取捨</h2>
+  <div class="scroll"><table>
+    <tr><th>決策點</th><th>選擇</th><th>理由</th><th>放棄了什麼</th></tr>
+    <tr>
+      <td>要不要整合當年刻意分開的2 支 API？</td>
+      <td>整合，但保留 CEO 差異</td>
+      <td>當初分開是為了在需求不穩定時互不影響。如今需求已穩定數月，隔離的好處消失，維護2 份的成本留著。用 <code>CeoInventoryDecorator</code> 把 CEO 專屬部分獨立出來，仍可各自演進。</td>
+      <td>失去「複製即隔離」的簡單性；日後共用邏輯的改動要同時考慮2 邊</td>
+    </tr>
+    <tr>
+      <td>整合與效能優化，要分2 次還是一起？</td>
+      <td>一起做</td>
+      <td>兩者互為因果：熱點剛好卡在被複製2 份的邏輯裡。先把邏輯抽成可測試單元，才能單獨量測、改寫 SQL，不必在混雜的 controller 裡擔心動到另一支。</td>
+      <td>單一 MR 變大、審查負擔較重</td>
+    </tr>
+    <tr>
+      <td>怎麼證明改完沒壞？</td>
+      <td>先證明等價，再談變快</td>
+      <td>用既有 favorites 資料當語料，比對重構前後輸出一致，而不是只看查詢數下降就收工。</td>
+      <td>多花時間做比對</td>
+    </tr>
+    <tr>
+      <td>哪些東西不能動？</td>
+      <td>location、order_id 的既有計算方式維持原樣</td>
+      <td>這屬於業務語意，優化不應悄悄改變它。</td>
+      <td>這2 處若有可優化空間，本次不處理</td>
+    </tr>
+
+
+    <tr>
+      <td>materialized view 區間怎麼寫？</td>
+      <td>row comparison：<code>(sales_year, sales_month) &gt;= (…)</code></td>
+      <td>常見寫法 <code>(sales_year*12 + sales_month) between …</code> 把欄位包進運算式，索引吃不到。改寫語意相同但欄位裸露，實測 5.8 ms → 1.9 ms。</td>
+      <td>可讀性略降，需註解說明</td>
+    </tr>
+
+  </table></div>
+</section>
+
+<section>
+  <h2>6. 驗證方式</h2>
+  <ul>
+    <li><b>行為等價：</b>以 favorites 資料為語料，比對重構前後輸出，2 支 API 各自驗證，確保整合沒有改變任何一邊的結果。</li>
+    <li><b>突變測試：</b>刻意改壞程式碼，確認新增測試會失敗。這是為了證明測試「有效」，不只是「有跑到」。</li>
+    <li><b>效能量測：</b>同時記錄單體執行時間、查詢數與端到端 HTTP 時間，不只看單一指標。</li>
+  </ul>
+</section>
+
+<section>
+  <h2>7. 成果</h2>
+  <div class="scroll"><table>
+    <tr><th>指標</th><th>重構前</th><th>重構後</th><th>改善</th></tr>
+    <tr><td>單體執行時間</td><td class="n">3080 ms</td><td class="n">427 ms</td><td class="n">−86%</td></tr>
+    <tr><td>資料庫查詢數</td><td class="n">210</td><td class="n">14</td><td class="n">−93%</td></tr>
+    <tr><td>端到端 HTTP 請求（dev 站台）</td><td class="n">—</td><td class="n">0.985 s</td><td class="n">—</td></tr>
+    <tr><td>matview 區間查詢</td><td class="n">5.8 ms</td><td class="n">1.9 ms</td><td class="n">−67%</td></tr>
+    <tr><td>controller 行數</td><td class="n">215 / 242</td><td class="n">4 / 4</td><td class="n">—</td></tr>
+  </table></div>
+  <p class="meta">單體執行時間只看後端；端到端還包含網路與前端請求。查詢數降幅 93% 為依表列數字換算。</p>
+</section>
+
+
+
+
+
+
+</main>
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#eaf1f4","text":"#203b55","line":"#165e83","border":"#165e83","bg":"#f7f5ef"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+
+<link rel="stylesheet" href="report-navigation.css">
+<script src="report-navigation.js?v=2"></script>
+</body></html>

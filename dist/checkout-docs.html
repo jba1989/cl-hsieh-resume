@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>結帳流程 Demo｜謝忠霖 CL Hsieh</title>
+<link rel="stylesheet" href="checkout-docs.css">
+<link rel="stylesheet" href="report-navigation.css">
+<link rel="stylesheet" href="site-navbar.css?v=2">
+<script src="site-navbar.js" defer></script>
+</head>
+<body class="checkout-docs-page">
+
+<div class="container checkout-layout">
+<nav id="checkout-chapters" class="report-navigation" aria-label="章節導覽"></nav>
+<main class="docs-shell">
+  <p class="eyebrow">CASE STUDY / 02</p>
+  <h1>簡易版結帳系統</h1>
+  <p class="intro">以交易一致性、庫存保留與付款結果處理為核心的結帳系統 Demo。選取頁籤閱讀設計文件；流程圖依原始文件的 Mermaid 定義直接呈現。</p>
+  <nav id="doc-tabs" class="doc-tabs" aria-label="文件頁籤"></nav>
+  <section class="doc-stage" aria-live="polite"><div id="doc-content" class="doc-content"><p>載入文件中…</p></div></section>
+</main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:false,securityLevel:'strict'});</script>
+<script src="checkout-docs.js"></script>
+</body>
+</html>
